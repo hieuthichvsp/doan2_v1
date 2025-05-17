@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý thiết bị</title>
+    <link rel="stylesheet" href="https://pro.fontawesome.com/releases/v5.10.0/css/all.css"
+        integrity="sha384-AYmEC3Yw5cVb3ZcuHtOA93w35dYTsvhLPVnYs9eStHfGJvOvKxVfELGroGkvsg+p" crossorigin="anonymous" />
+    <link rel="stylesheet" href="/css/dashboardStyle.css">
+    <link rel="stylesheet" href="/css/deviceManagementStyle.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"
+        integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+</head>
+
+<body>
+    <%- include('../layouts/header') %>
+
+    <div class="content">
+        <h2>Quản lý thiết bị</h2>
+
+        <div class="header-row">
+            <div class="search-add-container">
+                <div class="search-container">
+                    <input type="text" id="deviceSearchInput" placeholder="Tìm kiếm thiết bị...">
+                    <button type="button" id="deviceSearchBtn"><i class="fas fa-search"></i></button>
+                </div>
+                <button id="addDeviceBtn" class="add-device-btn"><i class="fas fa-plus"></i> Thêm thiết bị mới</button>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>STT</th>
+                        <th>Mã thiết bị</th>
+                        <th>Tên thiết bị</th>
+                        <th>Vị trí</th>
+                        <th>Lớp học</th>
+                        <th>Trạng thái</th>
+                        <th>Hành động</th>
+                    </tr>
+                </thead>
+                <tbody id="deviceTableBody">
+                    <!-- Device data will be loaded here -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Phân trang -->
+        <div class="pagination-container">
+            <div class="pagination" id="devicePagination">
+                <!-- Pagination will be generated here -->
+            </div>
+        </div>
+
+        <!-- View Device Modal -->
+        <div id="viewDeviceModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Chi tiết thiết bị</h2>
+                    <span class="close-view-btn">&times;</span>
+                </div>
+                <div class="modal-body">
+                    <table class="details-table">
+                        <tr>
+                            <th>ID:</th>
+                            <td id="viewDeviceId"></td>
+                        </tr>
+                        <tr>
+                            <th>Mã thiết bị:</th>
+                            <td id="viewDeviceCode"></td>
+                        </tr>
+                        <tr>
+                            <th>Tên thiết bị:</th>
+                            <td id="viewDeviceName"></td>
+                        </tr>
+                        <tr>
+                            <th>Vị trí:</th>
+                            <td id="viewDeviceLocation"></td>
+                        </tr>
+                        <tr>
+                            <th>Lớp học:</th>
+                            <td id="viewDeviceClass"></td>
+                        </tr>
+                        <tr>
+                            <th>Trạng thái:</th>
+                            <td id="viewDeviceStatus"></td>
+                        </tr>
+                        <tr>
+                            <th>Ngày tạo:</th>
+                            <td id="viewDeviceCreatedAt"></td>
+                        </tr>
+                        <tr>
+                            <th>Cập nhật lần cuối:</th>
+                            <td id="viewDeviceUpdatedAt"></td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary close-view-btn">Đóng</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add/Edit Device Modal -->
+        <div id="deviceModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 id="deviceModalLabel">Thêm thiết bị mới</h2>
+                    <span class="close-device-btn">&times;</span>
+                </div>
+                <div class="modal-body">
+                    <form id="deviceForm">
+                        <input type="hidden" id="deviceId">
+                        <div class="form-group">
+                            <label for="deviceCode" class="form-label">Mã thiết bị:</label>
+                            <input type="text" class="form-control" id="deviceCode" required>
+                            <div class="invalid-feedback" id="deviceCodeFeedback"></div>
+                        </div>
+                        <div class="form-group">
+                            <label for="deviceName" class="form-label">Tên thiết bị:</label>
+                            <input type="text" class="form-control" id="deviceName" required>
+                            <div class="invalid-feedback" id="deviceNameFeedback"></div>
+                        </div>
+                        <div class="form-group">
+                            <label for="deviceLocation" class="form-label">Vị trí:</label>
+                            <input type="text" class="form-control" id="deviceLocation" required>
+                            <div class="invalid-feedback" id="deviceLocationFeedback"></div>
+                        </div>
+                        <div class="form-group">
+                            <label for="deviceClass" class="form-label">Lớp học:</label>
+                            <select class="form-control" id="deviceClass">
+                                <option value="">-- Chưa gán lớp học --</option>
+                                <!-- Classes will be loaded here -->
+                            </select>
+                            <div class="invalid-feedback" id="deviceClassFeedback"></div>
+                        </div>
+                        <div class="form-group">
+                            <label for="deviceStatus" class="form-label">Trạng thái:</label>
+                            <select class="form-control" id="deviceStatus" required>
+                                <option value="true">Hoạt động</option>
+                                <option value="false">Không hoạt động</option>
+                            </select>
+                            <div class="invalid-feedback" id="deviceStatusFeedback"></div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-save" id="saveDeviceBtn">Lưu</button>
+                    <button type="button" class="btn btn-cancel close-device-btn">Hủy</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Delete Confirmation Modal -->
+        <div id="deleteConfirmationModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header delete-header">
+                    <h2>Xác nhận xóa</h2>
+                    <span class="close-delete-btn">&times;</span>
+                </div>
+                <div class="modal-body">
+                    <p class="warning-text">Bạn có chắc chắn muốn xóa thiết bị này không?</p>
+                    <p id="deleteDeviceInfo"></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Xác nhận xóa</button>
+                    <button type="button" class="btn btn-secondary close-delete-btn">Hủy</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Notification Modal -->
+        <div id="notificationModal" class="notification-modal">
+            <div class="notification-content">
+                <div class="notification-icon">
+                    <i class="fas fa-check-circle"></i>
+                    <i class="fas fa-trash-alt" style="display:none;"></i>
+                    <i class="fas fa-exclamation-triangle" style="display:none;"></i>
+                </div>
+                <div class="notification-text">
+                    <p id="notificationMessage">Thông báo</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom JS -->
+    <script src="/js/adminJs/deviceManagementModal.js"></script>
+    <script src="/js/adminJs/sidebarEffect.js"></script>
+</body>
+
+</html>

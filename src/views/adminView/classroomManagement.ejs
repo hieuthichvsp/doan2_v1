@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý lớp học</title>
+    <link rel="stylesheet" href="https://pro.fontawesome.com/releases/v5.10.0/css/all.css"
+        integrity="sha384-AYmEC3Yw5cVb3ZcuHtOA93w35dYTsvhLPVnYs9eStHfGJvOvKxVfELGroGkvsg+p" crossorigin="anonymous" />
+    <link rel="stylesheet" href="/css/Dashboardstyle.css">
+    <link rel="stylesheet" href="/css/classroomManagementStyle.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"
+        integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+</head>
+
+<body>
+    <%- include('../layouts/header') %>
+        <div class="content">
+            <div class="header-row">
+                <h2>Quản lý lớp học</h2>
+                <div class="search-add-container">
+                    <div class="search-container">
+                        <form action="/admin/classroomManagement" method="GET">
+                            <input type="text" name="searchCode" placeholder="Tìm theo mã lớp học..."
+                                value="<%= searchCode %>" />
+                            <button type="submit"><i class="fas fa-search"></i></button>
+                        </form>
+                    </div>
+                    <button class="add-classroom-btn" id="openAddModal">
+                        <i class="fas fa-plus"></i> Thêm lớp học
+                    </button>
+                </div>
+            </div>
+
+            <% if (searchResults) { %>
+                <div class="search-results-info">
+                    <% if (classrooms.length> 0) { %>
+                        <p>Tìm thấy <%= pagination.totalClassrooms %> kết quả cho mã lớp học "<%= searchCode %>"</p>
+                        <% } else { %>
+                            <p>Không tìm thấy kết quả nào cho mã lớp học "<%= searchCode %>"</p>
+                            <% } %>
+                                <a href="/admin/classroomManagement" class="clear-search">Xóa tìm kiếm</a>
+                </div>
+                <% } %>
+
+                    <div class="table-responsive">
+                        <table class="classroom-table">
+                            <thead>
+                                <tr>
+                                    <th>STT</th>
+                                    <th>Mã lớp học</th>
+                                    <th>Tên lớp học</th>
+                                    <th>Sức chứa</th>
+                                    <th>Loại phòng</th>
+                                    <th>Hành động</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% if (classrooms.length> 0) { %>
+                                    <% classrooms.forEach((classroom, index)=> { %>
+                                        <tr>
+                                            <td>
+                                                <%= (pagination.page - 1) * pagination.limit + index + 1 %>
+                                            </td>
+                                            <td>
+                                                <%= classroom.room_code %>
+                                            </td>
+                                            <td>
+                                                <%= classroom.name %>
+                                            </td>
+                                            <td>
+                                                <%= classroom.capacity %>
+                                            </td>
+                                            <td>
+                                                <% if (classroom.type==='LT' ) { %>
+                                                    <span class="classroom-type theory">Lý thuyết</span>
+                                                    <% } else if (classroom.type==='TH' ) { %>
+                                                        <span class="classroom-type practice">Thực hành</span>
+                                                        <% } %>
+                                            </td>
+                                            <td class="action-btns">
+                                                <i class="fas fa-eye view-classroom-btn" data-id="<%= classroom.id %>"
+                                                    title="Xem chi tiết"></i>
+                                                <i class="fas fa-edit edit-classroom-btn" data-id="<%= classroom.id %>"
+                                                    title="Chỉnh sửa"></i>
+                                                <i class="fas fa-trash delete-classroom-btn"
+                                                    data-id="<%= classroom.id %>" title="Xóa"></i>
+                                            </td>
+                                        </tr>
+                                        <% }); %>
+                                            <% } else { %>
+                                                <tr>
+                                                    <td colspan="6" class="no-results">Không có lớp học nào</td>
+                                                </tr>
+                                                <% } %>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Phân trang -->
+                    <% if (classrooms.length> 0) { %>
+                        <div class="pagination-container">
+                            <div class="pagination" id="pagination-container" data-current-page="<%= pagination.page %>"
+                                data-total-pages="<%= pagination.totalPages %>" data-search-code="<%= searchCode %>">
+                                <!-- Nút trang đầu và trang trước -->
+                                <% if (pagination.page> 1) { %>
+                                    <a href="?page=1<%= searchCode ? '&searchCode=' + searchCode : '' %>"
+                                        class="pagination-link first-page">
+                                        <i class="fas fa-angle-double-left"></i>
+                                    </a>
+                                    <a href="?page=<%= pagination.page - 1 %><%= searchCode ? '&searchCode=' + searchCode : '' %>"
+                                        class="pagination-link prev-page">
+                                        <i class="fas fa-angle-left"></i>
+                                    </a>
+                                    <% } else { %>
+                                        <span class="pagination-link disabled first-page"><i
+                                                class="fas fa-angle-double-left"></i></span>
+                                        <span class="pagination-link disabled prev-page"><i
+                                                class="fas fa-angle-left"></i></span>
+                                        <% } %>
+
+                                            <!-- Đoạn số trang sẽ được tạo bằng JavaScript -->
+                                            <span id="page-numbers"></span>
+
+                                            <!-- Nút trang sau và trang cuối -->
+                                            <% if (pagination.page < pagination.totalPages) { %>
+                                                <a href="?page=<%= pagination.page + 1 %><%= searchCode ? '&searchCode=' + searchCode : '' %>"
+                                                    class="pagination-link next-page">
+                                                    <i class="fas fa-angle-right"></i>
+                                                </a>
+                                                <a href="?page=<%= pagination.totalPages %><%= searchCode ? '&searchCode=' + searchCode : '' %>"
+                                                    class="pagination-link last-page">
+                                                    <i class="fas fa-angle-double-right"></i>
+                                                </a>
+                                                <% } else { %>
+                                                    <span class="pagination-link disabled next-page"><i
+                                                            class="fas fa-angle-right"></i></span>
+                                                    <span class="pagination-link disabled last-page"><i
+                                                            class="fas fa-angle-double-right"></i></span>
+                                                    <% } %>
+                            </div>
+                        </div>
+                        <% } %>
+
+                            <!-- View Classroom Modal -->
+                            <div id="viewClassroomModal" class="modal">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h2>Chi tiết lớp học</h2>
+                                        <span class="close-view-btn">&times;</span>
+                                    </div>
+                                    <div class="modal-body">
+                                        <div class="classroom-info-container">
+                                            <div class="info-row">
+                                                <div class="info-label">Mã lớp học:</div>
+                                                <div class="info-value" id="viewRoomCode"></div>
+                                            </div>
+                                            <div class="info-row">
+                                                <div class="info-label">Tên lớp học:</div>
+                                                <div class="info-value" id="viewRoomName"></div>
+                                            </div>
+                                            <div class="info-row">
+                                                <div class="info-label">Sức chứa:</div>
+                                                <div class="info-value" id="viewCapacity"></div>
+                                            </div>
+                                            <div class="info-row">
+                                                <div class="info-label">Loại phòng:</div>
+                                                <div class="info-value" id="viewType"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button class="btn btn-secondary close-view-btn">Đóng</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Edit Classroom Modal -->
+                            <div id="editClassroomModal" class="modal">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h2>Chỉnh sửa lớp học</h2>
+                                        <span class="close-edit-btn">&times;</span>
+                                    </div>
+                                    <div class="modal-body">
+                                        <form id="editClassroomForm">
+                                            <input type="hidden" id="editId">
+                                            <div class="form-group">
+                                                <label for="editRoomCode">Mã lớp học:</label>
+                                                <input type="text" id="editRoomCode" name="room_code" required>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="editRoomName">Tên lớp học:</label>
+                                                <input type="text" id="editRoomName" name="name" required>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="editCapacity">Sức chứa:</label>
+                                                <input type="number" id="editCapacity" name="capacity" min="1" max="200"
+                                                    required>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="editType">Loại phòng:</label>
+                                                <select id="editType" name="type" required>
+                                                    <option value="LT">Lý thuyết</option>
+                                                    <option value="TH">Thực hành</option>
+                                                </select>
+                                            </div>
+                                            <div class="form-actions">
+                                                <button type="submit" class="btn btn-save">Lưu thay đổi</button>
+                                                <button type="button" class="btn btn-cancel close-edit-btn">Hủy</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Add Classroom Modal -->
+                            <div id="addClassroomModal" class="modal">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h2>Thêm lớp học mới</h2>
+                                        <span class="close-add-btn">&times;</span>
+                                    </div>
+                                    <div class="modal-body">
+                                        <form id="addClassroomForm">
+                                            <div class="form-group">
+                                                <label for="addRoomCode">Mã lớp học:</label>
+                                                <input type="text" id="addRoomCode" name="room_code"
+                                                    placeholder="Nhập mã lớp học" required>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="addRoomName">Tên lớp học:</label>
+                                                <input type="text" id="addRoomName" name="name"
+                                                    placeholder="Nhập tên lớp học" required>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="addCapacity">Sức chứa:</label>
+                                                <input type="number" id="addCapacity" name="capacity" min="1" max="200"
+                                                    value="40" required>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="addType">Loại phòng:</label>
+                                                <select id="addType" name="type" required>
+                                                    <option value="LT">Lý thuyết</option>
+                                                    <option value="TH">Thực hành</option>
+                                                </select>
+                                            </div>
+                                            <div class="form-actions">
+                                                <button type="submit" class="btn btn-save">Thêm lớp học</button>
+                                                <button type="button" class="btn btn-cancel close-add-btn">Hủy</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Delete Confirmation Modal -->
+                            <div id="deleteConfirmModal" class="modal">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h2>Xác nhận xóa</h2>
+                                        <span class="close-delete-btn">&times;</span>
+                                    </div>
+                                    <div class="modal-body">
+                                        <p class="warning-text">Bạn có chắc chắn muốn xóa lớp học này?</p>
+                                        <div id="deleteClassroomInfo"></div>
+                                        <div class="form-actions">
+                                            <button id="confirmDeleteBtn" class="btn btn-danger">Xóa</button>
+                                            <button class="btn btn-cancel close-delete-btn">Hủy</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Notification Modal -->
+                            <div id="notificationModal" class="notification-modal">
+                                <div class="notification-content">
+                                    <div class="notification-icon">
+                                        <i class="fas fa-check-circle"></i>
+                                        <i class="fas fa-trash-alt" style="display: none;"></i>
+                                    </div>
+                                    <div class="notification-text">
+                                        <p id="notificationMessage"></p>
+                                    </div>
+                                </div>
+                            </div>
+        </div>
+
+        <script src="/js/adminJs/classroomManagementModal.js"></script>
+        <script src="/js/adminJs/pagination.js"></script>
+        <script src="/js/adminJs/sidebarEffect.js"></script>
+</body>
+
+</html>

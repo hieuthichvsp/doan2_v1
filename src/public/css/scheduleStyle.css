@@ -1,0 +1,794 @@
+/* ===== CSS CHO TRANG LỊCH DẠY GIÁO VIÊN ===== */
+
+/* Định dạng chính cho phần nội dung */
+.content {
+    padding: 30px;
+    color: black;
+    min-height: 80%;
+    background-color: white;
+    transition: 0.3s ease;
+    overflow-y: auto;
+    width: 100%;
+    border-radius: 15px;
+    margin-top: 80px;
+    transition: margin-left 0.3s ease, width 0.3s ease;
+    margin-left: 80px;
+}
+
+/* Khi checkbox sidebar được checked */
+#open:checked~.content,
+body.has-sidebar-open .content {
+    margin-left: 250px;
+    width: calc(100% - 250px);
+}
+
+/* Điều chỉnh responsive khi có sidebar */
+@media screen and (max-width: 768px) {
+
+    #open:checked~.content,
+    body.has-sidebar-open .content {
+        margin-left: 0;
+        width: 100%;
+        opacity: 0.7;
+    }
+}
+
+.content h2 {
+    margin-bottom: 20px;
+    font-size: 28px;
+    color: black;
+    padding-left: 50px;
+}
+
+/* ===== ĐIỀU KHIỂN LỊCH DẠY ===== */
+.card {
+    margin-bottom: 20px;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+    background-color: #fff;
+}
+
+.card-header {
+    background-color: #3399FF;
+    color: white;
+    padding: 15px 20px;
+}
+
+.card-header h6 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.card-body {
+    padding: 20px;
+}
+
+/* Điều khiển view */
+.schedule-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+    gap: 15px;
+}
+
+.view-buttons {
+    display: flex;
+    gap: 5px;
+}
+
+.view-btn {
+    padding: 8px 15px;
+    background-color: #f5f5f5;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 14px;
+}
+
+.view-btn.active {
+    background-color: #3399FF;
+    color: white;
+    border-color: #3399FF;
+}
+
+.view-btn:hover:not(.active) {
+    background-color: #e9ecef;
+}
+
+/* Điều hướng ngày */
+.date-navigation {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.date-navigation button {
+    width: 35px;
+    height: 35px;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+    background-color: #f5f5f5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.date-navigation button:hover {
+    background-color: #e9ecef;
+}
+
+#current-date {
+    min-width: 180px;
+    font-weight: 500;
+    text-align: center;
+    font-size: 15px;
+}
+
+#today-btn {
+    padding: 8px 15px;
+    background-color: #f5f5f5;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+#today-btn:hover {
+    background-color: #e9ecef;
+}
+
+#filter-btn {
+    background-color: #f5f5f5;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 8px 15px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: all 0.2s ease;
+    font-size: 14px;
+}
+
+#filter-btn:hover {
+    background-color: #e9ecef;
+}
+
+/* Thông tin bộ lọc */
+.filter-info {
+    padding: 12px 15px;
+    background-color: #e8f4fd;
+    border: 1px solid #bee5eb;
+    border-radius: 4px;
+    margin-bottom: 20px;
+    color: #0c5460;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+#filter-summary {
+    font-size: 14px;
+    color: #0c5460;
+}
+
+#clear-filter {
+    background-color: transparent;
+    border: 1px solid #0c5460;
+    color: #0c5460;
+    border-radius: 4px;
+    padding: 5px 10px;
+    cursor: pointer;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: all 0.2s ease;
+}
+
+#clear-filter:hover {
+    background-color: #0c5460;
+    color: white;
+}
+
+/* ===== VIEW STYLES ===== */
+.schedule-view {
+    display: none;
+}
+
+.schedule-view.active {
+    display: block;
+}
+
+/* ===== TABLE STYLES ===== */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: #fff;
+    border-radius: 5px;
+    overflow: hidden;
+    margin-bottom: 0;
+    font-family: Arial, sans-serif;
+    font-size: 14px;
+}
+
+table thead {
+    background-color: #f8f9fa;
+}
+
+table th {
+    padding: 12px 15px;
+    text-align: left;
+    font-weight: 600;
+    color: #495057;
+    border-bottom: 2px solid #dee2e6;
+}
+
+table tbody tr {
+    border-bottom: 1px solid #eee;
+    transition: background-color 0.2s ease;
+}
+
+table tbody tr:hover {
+    background-color: #f5f5f5;
+}
+
+table td {
+    padding: 12px 15px;
+    color: #333;
+}
+
+.event-row {
+    cursor: pointer;
+}
+
+/* Message when no events */
+.no-data-cell {
+    text-align: center;
+    padding: 30px 15px !important;
+}
+
+.no-events {
+    color: #6c757d;
+    font-style: italic;
+    text-align: center;
+    padding: 30px 0;
+}
+
+/* ===== WEEK VIEW TABS ===== */
+.weekday-tabs {
+    margin-bottom: 20px;
+}
+
+.nav-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.nav-item {
+    margin-bottom: 5px;
+}
+
+.nav-link {
+    padding: 8px 12px;
+    background-color: #f5f5f5;
+    border: 1px solid #ddd;
+    border-radius: 20px;
+    color: #495057;
+    text-decoration: none;
+    font-size: 14px;
+    transition: all 0.2s ease;
+    display: block;
+}
+
+.nav-link:hover {
+    background-color: #e9ecef;
+}
+
+.nav-link.active {
+    background-color: #3399FF;
+    color: white;
+    border-color: #3399FF;
+}
+
+/* ===== MONTH VIEW CALENDAR ===== */
+.calendar-header {
+    background-color: #f8f9fa;
+    border-radius: 5px 5px 0 0;
+    padding: 10px 0;
+    border: 1px solid #dee2e6;
+    border-bottom: none;
+}
+
+.calendar-header .row {
+    margin: 0;
+}
+
+.calendar-header .col {
+    text-align: center;
+    font-weight: 600;
+    color: #495057;
+    padding: 5px;
+}
+
+.calendar-container {
+    background-color: #fff;
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 20px;
+}
+
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 5px;
+    padding: 10px;
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+}
+
+.calendar-day {
+    min-height: 90px;
+    padding: 8px;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    position: relative;
+    background-color: white;
+    transition: all 0.2s ease;
+}
+
+.calendar-day:hover {
+    background-color: #f8f9fa;
+}
+
+.calendar-day.today {
+    background-color: #e8f4fd;
+    border-color: #3399FF;
+}
+
+.calendar-day.other-month {
+    opacity: 0.5;
+}
+
+.calendar-day.has-events {
+    cursor: pointer;
+}
+
+.calendar-day.selected {
+    border: 2px solid #3399FF;
+}
+
+/* Thêm style để phân biệt các ngày trong học kỳ */
+.calendar-day.in-semester {
+    border-color: #3399FF;
+    background-color: #f8f9fa;
+}
+
+.calendar-day.no-semester {
+    opacity: 0.5;
+    border-color: #dee2e6;
+    background-color: #f8f9fa;
+    /* Thêm pattern để chỉ ra ngày không trong học kỳ */
+    background-image: repeating-linear-gradient(45deg, #f2f2f2, #f2f2f2 5px, #f8f9fa 5px, #f8f9fa 10px);
+}
+
+.day-number {
+    position: absolute;
+    top: 5px;
+    right: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #495057;
+}
+
+.event-indicator {
+    display: block;
+    margin-top: 25px;
+    height: 4px;
+    background-color: #3399FF;
+    border-radius: 2px;
+    margin-bottom: 3px;
+}
+
+.event-more {
+    font-size: 12px;
+    color: #6c757d;
+    text-align: center;
+    margin-top: 5px;
+}
+
+/* ===== MODAL STYLES ===== */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    overflow-y: auto;
+}
+
+.modal-content {
+    background-color: white;
+    margin: 50px auto;
+    width: 90%;
+    max-width: 600px;
+    border-radius: 8px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    overflow: hidden;
+    animation: modalFadeIn 0.3s ease;
+}
+
+@keyframes modalFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.modal-header {
+    background-color: #3399FF;
+    color: white;
+    padding: 15px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-header h5 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 500;
+}
+
+.modal-header .close {
+    font-size: 24px;
+    cursor: pointer;
+    color: white;
+    background: none;
+    border: none;
+    line-height: 1;
+}
+
+.modal-body {
+    padding: 20px;
+}
+
+.modal-footer {
+    padding: 15px 20px;
+    border-top: 1px solid #ddd;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+/* Form in modal */
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 500;
+    color: #495057;
+    font-size: 14px;
+}
+
+.form-control {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    font-size: 14px;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+.form-control:focus {
+    border-color: #80bdff;
+    outline: 0;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+/* Detail view */
+.detail-row {
+    margin-bottom: 15px;
+}
+
+.font-weight-bold {
+    font-weight: 600;
+}
+
+/* ===== BUTTON STYLES ===== */
+.btn {
+    display: inline-block;
+    font-weight: 400;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: middle;
+    user-select: none;
+    border: 1px solid transparent;
+    padding: 0.375rem 0.75rem;
+    font-size: 14px;
+    line-height: 1.5;
+    border-radius: 0.25rem;
+    transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+    cursor: pointer;
+}
+
+.btn-primary {
+    color: #fff;
+    background-color: #3399FF;
+    border-color: #3399FF;
+}
+
+.btn-primary:hover {
+    background-color: #0069d9;
+    border-color: #0062cc;
+}
+
+.btn-secondary {
+    color: #fff;
+    background-color: #6c757d;
+    border-color: #6c757d;
+}
+
+.btn-secondary:hover {
+    background-color: #5a6268;
+    border-color: #545b62;
+}
+
+.btn-outline-primary {
+    color: #3399FF;
+    background-color: transparent;
+    border-color: #3399FF;
+}
+
+.btn-outline-primary:hover {
+    color: #fff;
+    background-color: #3399FF;
+    border-color: #3399FF;
+}
+
+.btn-outline-secondary {
+    color: #6c757d;
+    background-color: transparent;
+    border-color: #6c757d;
+}
+
+.btn-outline-secondary:hover {
+    color: #fff;
+    background-color: #6c757d;
+    border-color: #6c757d;
+}
+
+.btn-sm {
+    padding: 0.25rem 0.5rem;
+    font-size: 12px;
+    line-height: 1.5;
+    border-radius: 0.2rem;
+}
+
+/* ===== NOTIFICATION ===== */
+.notification-modal {
+    display: none;
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 2000;
+    min-width: 300px;
+    animation: notificationSlideIn 0.3s ease;
+}
+
+@keyframes notificationSlideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+.notification-content {
+    background-color: white;
+    padding: 15px 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    border-left: 4px solid #3399FF;
+}
+
+/* CSS cho thông báo lỗi */
+.alert-danger {
+    color: #721c24;
+    background-color: #f8d7da;
+    border-color: #f5c6cb;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    border: 1px solid transparent;
+    border-radius: 0.25rem;
+}
+
+/* ===== RESPONSIVE STYLES ===== */
+@media screen and (max-width: 768px) {
+    .schedule-controls {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .date-navigation {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .view-buttons,
+    .filter-controls {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .calendar-day {
+        min-height: 60px;
+    }
+
+    .modal-content {
+        width: 95%;
+        margin: 20px auto;
+    }
+}
+
+/* Additional styles */
+.table-responsive {
+    display: block;
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.thead-light th {
+    background-color: #f8f9fa;
+    color: #495057;
+}
+
+.text-primary {
+    color: #3399FF !important;
+}
+
+.text-center {
+    text-align: center !important;
+}
+
+/* Thêm định nghĩa cho lưới lịch */
+.row {
+    display: flex;
+    flex-wrap: wrap;
+    margin-right: -15px;
+    margin-left: -15px;
+}
+
+.col {
+    flex-basis: 0;
+    flex-grow: 1;
+    max-width: 100%;
+    position: relative;
+    width: 100%;
+    padding-right: 15px;
+    padding-left: 15px;
+    text-align: center;
+}
+
+/* Sửa lỗi sidebar không đẩy nội dung */
+body {
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+}
+
+.main-container {
+    display: flex;
+    position: relative;
+    min-height: 100vh;
+    transition: all 0.3s ease;
+}
+
+/* Style cho sidebar */
+.sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 250px;
+    background: #213555;
+    z-index: 100;
+    transition: all 0.3s ease;
+    transform: translateX(0);
+}
+
+/* Khi sidebar đóng (checkbox không được checked) */
+#open:not(:checked)~.sidebar {
+    transform: translateX(-250px);
+}
+
+/* Khi sidebar mở (checkbox checked) */
+#open:checked~.sidebar {
+    transform: translateX(0);
+}
+
+#open:checked~.content {
+    margin-left: 250px;
+    width: calc(100% - 250px);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    #open:checked~.sidebar {
+        transform: translateX(0);
+    }
+
+    #open:checked~.content {
+        margin-left: 0;
+        width: 100%;
+    }
+
+    /* Thêm overlay khi sidebar mở trên mobile */
+    #open:checked~.overlay {
+        display: block;
+        opacity: 1;
+    }
+}
+
+/* Overlay chỉ hiển thị trên mobile */
+.overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 99;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+#open:checked~.content,
+body.has-sidebar-open .content {
+    margin-left: 250px;
+    /* Điều chỉnh theo chiều rộng thực tế của menu */
+    width: calc(100% - 250px);
+}
+
+/* Điều chỉnh responsive khi có sidebar */
+@media screen and (max-width: 768px) {
+
+    #open:checked~.content,
+    body.has-sidebar-open .content {
+        margin-left: 0;
+        width: 100%;
+        opacity: 0.7;
+        /* Làm mờ content khi sidebar mở trên mobile */
+    }
+}

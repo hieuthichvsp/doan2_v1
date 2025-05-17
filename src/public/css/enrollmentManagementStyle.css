@@ -1,0 +1,218 @@
+/* 
+   File này chỉ chứa các style đặc thù cho trang đăng ký môn học
+   mà không có trong userManagementStyle.css
+   Các style chung đã được kế thừa từ userManagementStyle.css
+*/
+
+/* Style cho bulk enrollment modal */
+.bulk-modal-content {
+    width: 850px;
+    max-width: 90%;
+}
+
+.bulk-section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    font-weight: bold;
+}
+
+.bulk-student-selection {
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 15px;
+    margin-top: 20px;
+}
+
+.student-selection {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.selection-column {
+    flex: 1;
+    max-width: 45%;
+}
+
+.selection-column h4 {
+    margin-top: 0;
+    margin-bottom: 10px;
+    font-size: 15px;
+    color: #333;
+}
+
+.selection-actions {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 10px;
+    padding: 0 15px;
+    margin-top: 50px;
+}
+
+.btn-action {
+    width: 40px;
+    height: 40px;
+    border: 1px solid #ddd;
+    background-color: #f9f9f9;
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-action:hover {
+    background-color: #e9e9e9;
+}
+
+.btn-action i {
+    color: #555;
+}
+
+.student-list {
+    width: 100%;
+    height: 250px;
+    overflow-y: auto;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    padding: 5px;
+}
+
+.student-item {
+    padding: 8px 10px;
+    cursor: pointer;
+    border-bottom: 1px solid #f1f1f1;
+    transition: all 0.2s ease;
+}
+
+.student-item:hover {
+    background-color: #f8f9fa;
+}
+
+.student-item.selected {
+    background-color: #e9f5fc;
+    border-left: 3px solid #3399FF;
+}
+
+.student-count {
+    font-size: 13px;
+    color: #666;
+    margin-top: 5px;
+}
+
+.small-search {
+    margin-bottom: 10px;
+    position: relative;
+}
+
+.small-search input {
+    width: 100%;
+    padding: 8px 30px 8px 10px;
+    font-size: 13px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+}
+
+.small-search i {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #6c757d;
+}
+
+/* Style cho filter chọn học phần */
+.filter-container {
+    margin-right: 10px;
+}
+
+.filter-select {
+    padding: 10px 15px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    min-width: 200px;
+    font-size: 14px;
+    background-color: white;
+}
+
+/* Style riêng cho nút bulk-btn */
+.bulk-btn {
+    margin-left: 10px;
+    background-color: #17a2b8;
+}
+
+.bulk-btn:hover {
+    background-color: #138496;
+}
+
+/* Điều chỉnh style cho modal capacity info */
+.mt-2 {
+    margin-top: 10px;
+}
+
+/* Responsive styles for bulk enrollment */
+@media screen and (max-width: 768px) {
+    .student-selection {
+        flex-direction: column;
+    }
+    
+    .selection-column {
+        max-width: 100%;
+        margin-bottom: 15px;
+    }
+    
+    .selection-actions {
+        flex-direction: row;
+        margin-top: 10px;
+        margin-bottom: 10px;
+    }
+    
+    .bulk-modal-content {
+        width: 95%;
+    }
+    
+    .filter-container {
+        width: 100%;
+    }
+    
+    .filter-select {
+        width: 100%;
+    }
+    
+    .bulk-btn {
+        margin-left: 0;
+        margin-top: 10px;
+    }
+}
+
+/* Sửa lại màu trong thông báo sức chứa */
+.text-success {
+    color: #28a745;
+}
+
+.text-warning {
+    color: #ffc107;
+}
+
+.text-danger {
+    color: #dc3545;
+}
+
+/* Style cho invalid-feedback */
+.invalid-feedback {
+    display: block;
+    width: 100%;
+    margin-top: 5px;
+    color: #dc3545;
+    font-size: 13px;
+}
+
+/* Style cho loại học phần */
+.enrollment-type {
+    font-size: 12px;
+    font-weight: normal;
+    color: #6c757d;
+}

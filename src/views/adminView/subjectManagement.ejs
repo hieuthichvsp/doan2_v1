@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý môn học</title>
+    <link rel="stylesheet" href="https://pro.fontawesome.com/releases/v5.10.0/css/all.css"
+        integrity="sha384-AYmEC3Yw5cVb3ZcuHtOA93w35dYTsvhLPVnYs9eStHfGJvOvKxVfELGroGkvsg+p" crossorigin="anonymous" />
+    <link rel="stylesheet" href="/css/Dashboardstyle.css">
+    <link rel="stylesheet" href="/css/subjectManagementStyle.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"
+        integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+</head>
+
+<body>
+    <%- include('../layouts/header') %>
+        <div class="content">
+            <div class="header-row">
+                <h2>Quản lý môn học</h2>
+                <div class="search-add-container">
+                    <div class="search-container">
+                        <form action="/admin/subjectManagement" method="GET">
+                            <input type="text" name="searchCode" placeholder="Tìm theo mã môn học..."
+                                value="<%= searchCode %>" />
+                            <button type="submit"><i class="fas fa-search"></i></button>
+                        </form>
+                    </div>
+                    <button class="add-subject-btn" id="openAddModal">
+                        <i class="fas fa-plus"></i> Thêm môn học
+                    </button>
+                </div>
+            </div>
+
+            <% if (searchResults) { %>
+                <div class="search-results-info">
+                    <% if (subjects.length> 0) { %>
+                        <p>Tìm thấy <%= pagination.totalSubjects %> kết quả cho mã môn học "<%= searchCode %>"</p>
+                        <% } else { %>
+                            <p>Không tìm thấy kết quả nào cho mã môn học "<%= searchCode %>"</p>
+                            <% } %>
+                                <a href="/admin/subjectManagement" class="clear-search">Xóa tìm kiếm</a>
+                </div>
+                <% } %>
+
+                    <div class="table-responsive">
+                        <table class="subject-table">
+                            <thead>
+                                <tr>
+                                    <th>STT</th>
+                                    <th>Mã môn học</th>
+                                    <th>Tên môn học</th>
+                                    <th>Số tín chỉ</th>
+                                    <th>Hành động</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% if (subjects.length> 0) { %>
+                                    <% subjects.forEach((subject, index)=> { %>
+                                        <tr>
+                                            <td>
+                                                <%= (pagination.page - 1) * pagination.limit + index + 1 %>
+                                            </td>
+                                            <td>
+                                                <%= subject.sub_code %>
+                                            </td>
+                                            <td>
+                                                <%= subject.name %>
+                                            </td>
+                                            <td>
+                                                <%= subject.credit %>
+                                            </td>
+                                            <td class="action-btns">
+                                                <i class="fas fa-eye view-subject-btn" data-id="<%= subject.id %>"
+                                                    title="Xem chi tiết"></i>
+                                                <i class="fas fa-edit edit-subject-btn" data-id="<%= subject.id %>"
+                                                    title="Chỉnh sửa"></i>
+                                                <i class="fas fa-trash delete-subject-btn" data-id="<%= subject.id %>"
+                                                    title="Xóa"></i>
+                                            </td>
+                                        </tr>
+                                        <% }); %>
+                                            <% } else { %>
+                                                <tr>
+                                                    <td colspan="5" class="no-results">Không có môn học nào</td>
+                                                </tr>
+                                                <% } %>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Phân trang -->
+                    <% if (subjects.length> 0) { %>
+                        <div class="pagination-container">
+                            <div class="pagination" id="pagination-container" data-current-page="<%= pagination.page %>"
+                                data-total-pages="<%= pagination.totalPages %>" data-search-code="<%= searchCode %>">
+                                <!-- Nút trang đầu và trang trước -->
+                                <% if (pagination.page> 1) { %>
+                                    <a href="?page=1<%= searchCode ? '&searchCode=' + searchCode : '' %>"
+                                        class="pagination-link first-page">
+                                        <i class="fas fa-angle-double-left"></i>
+                                    </a>
+                                    <a href="?page=<%= pagination.page - 1 %><%= searchCode ? '&searchCode=' + searchCode : '' %>"
+                                        class="pagination-link prev-page">
+                                        <i class="fas fa-angle-left"></i>
+                                    </a>
+                                    <% } else { %>
+                                        <span class="pagination-link disabled first-page"><i
+                                                class="fas fa-angle-double-left"></i></span>
+                                        <span class="pagination-link disabled prev-page"><i
+                                                class="fas fa-angle-left"></i></span>
+                                        <% } %>
+
+                                            <!-- Đoạn số trang sẽ được tạo bằng JavaScript -->
+                                            <span id="page-numbers"></span>
+
+                                            <!-- Nút trang sau và trang cuối -->
+                                            <% if (pagination.page < pagination.totalPages) { %>
+                                                <a href="?page=<%= pagination.page + 1 %><%= searchCode ? '&searchCode=' + searchCode : '' %>"
+                                                    class="pagination-link next-page">
+                                                    <i class="fas fa-angle-right"></i>
+                                                </a>
+                                                <a href="?page=<%= pagination.totalPages %><%= searchCode ? '&searchCode=' + searchCode : '' %>"
+                                                    class="pagination-link last-page">
+                                                    <i class="fas fa-angle-double-right"></i>
+                                                </a>
+                                                <% } else { %>
+                                                    <span class="pagination-link disabled next-page"><i
+                                                            class="fas fa-angle-right"></i></span>
+                                                    <span class="pagination-link disabled last-page"><i
+                                                            class="fas fa-angle-double-right"></i></span>
+                                                    <% } %>
+                            </div>
+                        </div>
+                        <% } %>
+
+                            <!-- View Subject Modal -->
+                            <div id="viewSubjectModal" class="modal">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h2>Chi tiết môn học</h2>
+                                        <span class="close-view-btn">&times;</span>
+                                    </div>
+                                    <div class="modal-body">
+                                        <div class="subject-info-container">
+                                            <div class="info-row">
+                                                <div class="info-label">Mã môn học:</div>
+                                                <div class="info-value" id="viewSubCode"></div>
+                                            </div>
+                                            <div class="info-row">
+                                                <div class="info-label">Tên môn học:</div>
+                                                <div class="info-value" id="viewSubName"></div>
+                                            </div>
+                                            <div class="info-row">
+                                                <div class="info-label">Số tín chỉ:</div>
+                                                <div class="info-value" id="viewCredit"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button class="btn btn-secondary close-view-btn">Đóng</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Edit Subject Modal -->
+                            <div id="editSubjectModal" class="modal">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h2>Chỉnh sửa môn học</h2>
+                                        <span class="close-edit-btn">&times;</span>
+                                    </div>
+                                    <div class="modal-body">
+                                        <form id="editSubjectForm">
+                                            <input type="hidden" id="editId">
+                                            <div class="form-group">
+                                                <label for="editSubCode">Mã môn học:</label>
+                                                <input type="text" id="editSubCode" name="sub_code" required>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="editSubName">Tên môn học:</label>
+                                                <input type="text" id="editSubName" name="name" required>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="editCredit">Số tín chỉ:</label>
+                                                <input type="number" id="editCredit" name="credit" min="1" max="10"
+                                                    required>
+                                            </div>
+                                            <div class="form-actions">
+                                                <button type="submit" class="btn btn-save">Lưu thay đổi</button>
+                                                <button type="button" class="btn btn-cancel close-edit-btn">Hủy</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Add Subject Modal -->
+                            <div id="addSubjectModal" class="modal">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h2>Thêm môn học mới</h2>
+                                        <span class="close-add-btn">&times;</span>
+                                    </div>
+                                    <div class="modal-body">
+                                        <form id="addSubjectForm">
+                                            <div class="form-group">
+                                                <label for="addSubCode">Mã môn học:</label>
+                                                <input type="text" id="addSubCode" name="sub_code" required>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="addSubName">Tên môn học:</label>
+                                                <input type="text" id="addSubName" name="name" required>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="addCredit">Số tín chỉ:</label>
+                                                <input type="number" id="addCredit" name="credit" min="1" max="10"
+                                                    value="3" required>
+                                            </div>
+                                            <div class="form-actions">
+                                                <button type="submit" class="btn btn-save">Thêm môn học</button>
+                                                <button type="button" class="btn btn-cancel close-add-btn">Hủy</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Delete Confirmation Modal -->
+                            <div id="deleteConfirmModal" class="modal">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h2>Xác nhận xóa</h2>
+                                        <span class="close-delete-btn">&times;</span>
+                                    </div>
+                                    <div class="modal-body">
+                                        <p class="warning-text">Bạn có chắc chắn muốn xóa môn học này?</p>
+                                        <div id="deleteSubjectInfo"></div>
+                                        <div class="form-actions">
+                                            <button id="confirmDeleteBtn" class="btn btn-danger">Xóa</button>
+                                            <button class="btn btn-cancel close-delete-btn">Hủy</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Notification Modal -->
+                            <div id="notificationModal" class="notification-modal">
+                                <div class="notification-content">
+                                    <div class="notification-icon">
+                                        <i class="fas fa-check-circle"></i>
+                                        <i class="fas fa-trash-alt" style="display: none;"></i>
+                                    </div>
+                                    <div class="notification-text">
+                                        <p id="notificationMessage"></p>
+                                    </div>
+                                </div>
+                            </div>
+        </div>
+
+        <script src="/js/adminJs/subjectManagementModal.js"></script>
+        <script src="/js/adminJs/pagination.js"></script>
+        <script src="/js/adminJs/sidebarEffect.js"></script>
+</body>
+
+</html>

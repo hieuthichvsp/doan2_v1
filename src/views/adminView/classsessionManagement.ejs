@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>
+        <%= title %>
+    </title>
+    <link rel="stylesheet" href="https://pro.fontawesome.com/releases/v5.10.0/css/all.css"
+        integrity="sha384-AYmEC3Yw5cVb3ZcuHtOA93w35dYTsvhLPVnYs9eStHfGJvOvKxVfELGroGkvsg+p" crossorigin="anonymous" />
+    <link rel="stylesheet" href="/css/Dashboardstyle.css">
+    <link rel="stylesheet" href="/css/classsessionManagementStyle.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+
+<body>
+    <%- include('../layouts/header') %>
+
+        <div class="content">
+            <div class="header-row">
+                <h2>Quản lý học phần</h2>
+                <div class="search-add-container">
+                    <div class="search-container">
+                        <form action="/admin/classsessionManagement" method="GET">
+                            <input type="text" name="search" placeholder="Tìm kiếm học phần..."
+                                value="<%= searchTerm %>" />
+                            <button type="submit"><i class="fas fa-search"></i></button>
+                        </form>
+                    </div>
+                    <button class="add-classsession-btn" id="openAddModal">
+                        <i class="fas fa-plus"></i> Thêm học phần
+                    </button>
+                </div>
+            </div>
+            <div class="filter-options">
+                <select id="typeFilter" class="filter-select">
+                    <option value="">Tất cả loại</option>
+                    <option value="LT">Lý thuyết</option>
+                    <option value="TH">Thực hành</option>
+                </select>
+
+                <select id="semesterFilter" class="filter-select">
+                    <option value="">Tất cả học kỳ</option>
+                    <% semesters.forEach(function(semester) { %>
+                        <option value="<%= semester.id %>">
+                            <%= semester.name %>
+                        </option>
+                        <% }); %>
+                </select>
+
+                <select id="subjectFilter" class="filter-select">
+                    <option value="">Tất cả môn học</option>
+                    <% subjects.forEach(function(subject) { %>
+                        <option value="<%= subject.id %>">
+                            <%= subject.name %>
+                        </option>
+                        <% }); %>
+                </select>
+
+                <button id="applyFilters" class="filter-btn">Lọc</button>
+                <button id="resetFilters" class="filter-btn reset">Đặt lại</button>
+            </div>
+
+            <div class="table-responsive">
+                <table class="classsession-table">
+                    <thead>
+                        <tr>
+                            <th>STT</th>
+                            <th>Mã học phần</th>
+                            <th>Tên học phần</th>
+                            <th>Loại</th>
+                            <th>Môn học</th>
+                            <th>Học kỳ</th>
+                            <th>Lớp</th>
+                            <th>Giảng viên</th>
+                            <th>Sĩ số</th>
+                            <th>Đã đăng ký</th>
+                            <th>Hành động</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% if (classSessions && classSessions.length> 0) { %>
+                            <% classSessions.forEach((session, index)=> { %>
+                                <tr>
+                                    <td>
+                                        <%= (pagination.page - 1) * pagination.limit + index + 1 %>
+                                    </td>
+                                    <td>
+                                        <%= session.class_code %>
+                                    </td>
+                                    <td>
+                                        <%= session.name %>
+                                    </td>
+                                    <td>
+                                        <% if(session.type==='LT' ) { %>
+                                            <span class="type-badge type-lt">LT</span>
+                                            <% } else { %>
+                                                <span class="type-badge type-th">TH</span>
+                                                <% } %>
+                                    </td>
+                                    <td>
+                                        <%= session.subject ? session.subject.name : 'N/A' %>
+                                    </td>
+                                    <td>
+                                        <%= session.semester ? session.semester.name : 'N/A' %>
+                                    </td>
+                                    <td>
+                                        <%= session.class ? session.class.name : 'N/A' %>
+                                    </td>
+                                    <td>
+                                        <%= session.teacher ? session.teacher.name : 'Chưa phân công' %>
+                                    </td>
+                                    <td>
+                                        <%= session.capacity %>
+                                    </td>
+                                    <td>
+                                        <div class="capacity-bar">
+                                            <span>
+                                                <%= session.enrollmentCount %>/<%= session.capacity %>
+                                            </span>
+                                        </div>
+                                    </td>
+                                    <td class="action-btns">
+                                        <i class="fas fa-eye view-classsession-btn" data-id="<%= session.id %>"
+                                            title="Xem chi tiết"></i>
+                                        <i class="fas fa-edit edit-classsession-btn" data-id="<%= session.id %>"
+                                            title="Chỉnh sửa"></i>
+                                        <i class="fas fa-trash delete-classsession-btn" data-id="<%= session.id %>"
+                                            title="Xóa"></i>
+                                        <i class="fas fa-file-export export-students-btn" data-id="<%= session.id %>"
+                                            title="Xuất danh sách sinh viên"></i>
+                                    </td>
+                                </tr>
+                                <% }); %>
+                                    <% } else { %>
+                                        <tr>
+                                            <td colspan="11" class="no-results">Không có học phần nào</td>
+                                        </tr>
+                                        <% } %>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Phân trang -->
+            <% if (classSessions && classSessions.length> 0) { %>
+                <div class="pagination-container">
+                    <div class="pagination" id="pagination-container" data-current-page="<%= pagination.page %>"
+                        data-total-pages="<%= pagination.totalPages %>" data-search-term="<%= searchTerm %>">
+                        <!-- Nút trang đầu và trang trước -->
+                        <% if (pagination.page> 1) { %>
+                            <a href="?page=1<%= searchTerm ? '&search=' + searchTerm : '' %>"
+                                class="pagination-link first-page">
+                                <i class="fas fa-angle-double-left"></i>
+                            </a>
+                            <a href="?page=<%= pagination.page - 1 %><%= searchTerm ? '&search=' + searchTerm : '' %>"
+                                class="pagination-link prev-page">
+                                <i class="fas fa-angle-left"></i>
+                            </a>
+                            <% } else { %>
+                                <span class="pagination-link disabled first-page"><i
+                                        class="fas fa-angle-double-left"></i></span>
+                                <span class="pagination-link disabled prev-page"><i
+                                        class="fas fa-angle-left"></i></span>
+                                <% } %>
+
+                                    <!-- Đoạn số trang sẽ được tạo bằng JavaScript -->
+                                    <span id="page-numbers"></span>
+
+                                    <!-- Nút trang sau và trang cuối -->
+                                    <% if (pagination.page < pagination.totalPages) { %>
+                                        <a href="?page=<%= pagination.page + 1 %><%= searchTerm ? '&search=' + searchTerm : '' %>"
+                                            class="pagination-link next-page">
+                                            <i class="fas fa-angle-right"></i>
+                                        </a>
+                                        <a href="?page=<%= pagination.totalPages %><%= searchTerm ? '&search=' + searchTerm : '' %>"
+                                            class="pagination-link last-page">
+                                            <i class="fas fa-angle-double-right"></i>
+                                        </a>
+                                        <% } else { %>
+                                            <span class="pagination-link disabled next-page"><i
+                                                    class="fas fa-angle-right"></i></span>
+                                            <span class="pagination-link disabled last-page"><i
+                                                    class="fas fa-angle-double-right"></i></span>
+                                            <% } %>
+                    </div>
+                </div>
+                <% } %>
+
+                    <!-- View ClassSession Modal -->
+                    <div id="viewClassSessionModal" class="modal">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h2>Chi tiết học phần</h2>
+                                <span class="close-view-btn">&times;</span>
+                            </div>
+                            <div class="modal-body">
+                                <div class="classsession-info-container">
+                                    <div class="info-row">
+                                        <div class="info-label">Mã học phần:</div>
+                                        <div class="info-value" id="viewClassCode"></div>
+                                    </div>
+                                    <div class="info-row">
+                                        <div class="info-label">Tên học phần:</div>
+                                        <div class="info-value" id="viewName"></div>
+                                    </div>
+                                    <div class="info-row">
+                                        <div class="info-label">Loại:</div>
+                                        <div class="info-value">
+                                            <span id="viewType" class="type-badge"></span>
+                                        </div>
+                                    </div>
+                                    <div class="info-row">
+                                        <div class="info-label">Môn học:</div>
+                                        <div class="info-value" id="viewSubject"></div>
+                                    </div>
+                                    <div class="info-row">
+                                        <div class="info-label">Học kỳ:</div>
+                                        <div class="info-value" id="viewSemester"></div>
+                                    </div>
+                                    <div class="info-row">
+                                        <div class="info-label">Lớp:</div>
+                                        <div class="info-value" id="viewClass"></div>
+                                    </div>
+                                    <div class="info-row">
+                                        <div class="info-label">Giảng viên:</div>
+                                        <div class="info-value" id="viewTeacher"></div>
+                                    </div>
+                                    <div class="info-row">
+                                        <div class="info-label">Sĩ số:</div>
+                                        <div class="info-value" id="viewCapacity"></div>
+                                    </div>
+                                    <div class="info-row">
+                                        <div class="info-label">Đã đăng ký:</div>
+                                        <div class="info-value">
+                                            <span id="viewEnrollmentCount"></span>
+                                            <button id="viewEnrolledStudentsBtn" class="small-btn"
+                                                style="margin-left:0px">Xem danh
+                                                sách</button>
+                                        </div>
+                                    </div>
+                                    <div class="info-row">
+                                        <div class="info-label">Còn trống:</div>
+                                        <div class="info-value" id="viewRemainingSlots"></div>
+                                    </div>
+                                    <div class="info-row">
+                                        <div class="info-label">Số buổi điểm danh:</div>
+                                        <div class="info-value" id="viewAttendanceCount"></div>
+                                    </div>
+                                </div>
+
+                                <!-- Lịch học -->
+                                <div id="scheduleContainer">
+                                    <h3>Lịch học (<span id="scheduleCount">0</span> buổi)</h3>
+                                    <div class="schedule-list" id="scheduleList">
+                                        <!-- Nội dung sẽ được điền bởi JavaScript -->
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button class="btn btn-secondary close-view-btn">Đóng</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Students List Modal -->
+                    <div id="studentsListModal" class="modal">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h2>Danh sách sinh viên đã đăng ký</h2>
+                                <span class="close-students-btn">&times;</span>
+                            </div>
+                            <div class="modal-body">
+                                <div class="table-responsive">
+                                    <table class="students-table">
+                                        <thead>
+                                            <tr>
+                                                <th>STT</th>
+                                                <th>MSSV</th>
+                                                <th>Họ tên</th>
+                                                <th>Email</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="studentsList">
+                                            <!-- Nội dung sẽ được điền bởi JavaScript -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button id="exportStudentsBtn" class="btn btn-success">
+                                    <i class="fas fa-file-export"></i> Xuất danh sách
+                                </button>
+                                <button class="btn btn-secondary close-students-btn">Đóng</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Edit ClassSession Modal với nhiều bước -->
+                    <div id="editClassSessionModal" class="modal">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h2>Chỉnh sửa học phần</h2>
+                                <span class="close-edit-btn">&times;</span>
+                            </div>
+                            <div class="modal-body">
+                                <!-- Hiển thị các bước chỉnh sửa -->
+                                <div class="step-indicator">
+                                    <div class="step active" data-step="1">
+                                        <div class="step-number">1</div>
+                                        <div class="step-title">Thông tin học phần</div>
+                                    </div>
+                                    <div class="step" data-step="2">
+                                        <div class="step-number">2</div>
+                                        <div class="step-title">Lịch học</div>
+                                    </div>
+                                    <div class="step" data-step="3">
+                                        <div class="step-number">3</div>
+                                        <div class="step-title">Xác nhận</div>
+                                    </div>
+                                </div>
+
+                                <!-- Step 1: Thông tin học phần -->
+                                <div id="edit-step1-content" class="edit-step-content active">
+                                    <form id="editClassSessionForm">
+                                        <input type="hidden" id="editId">
+                                        <div class="form-group">
+                                            <label for="editClassCode">Mã học phần:</label>
+                                            <input type="text" id="editClassCode" name="class_code" required>
+                                            <div id="editClassCodeWarning" class="warning-text" style="display:none;"></div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="editName">Tên học phần:</label>
+                                            <input type="text" id="editName" name="name" required>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="editType">Loại học phần:</label>
+                                            <select id="editType" name="type" required>
+                                                <option value="">-- Chọn loại học phần --</option>
+                                                <option value="LT">Lý thuyết (LT)</option>
+                                                <option value="TH">Thực hành (TH)</option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="editSubject">Môn học:</label>
+                                            <select id="editSubject" name="sub_id" required>
+                                                <option value="">-- Chọn môn học --</option>
+                                                <% subjects.forEach(function(subject) { %>
+                                                    <option value="<%= subject.id %>"><%= subject.name %></option>
+                                                <% }); %>
+                                            </select>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="editSemester">Học kỳ:</label>
+                                            <select id="editSemester" name="semester_id" required>
+                                                <option value="">-- Chọn học kỳ --</option>
+                                                <% semesters.forEach(function(semester) { %>
+                                                    <option value="<%= semester.id %>"><%= semester.name %></option>
+                                                <% }); %>
+                                            </select>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="editClass">Lớp:</label>
+                                            <select id="editClass" name="class_id" required>
+                                                <option value="">-- Chọn lớp --</option>
+                                                <% classes.forEach(function(classItem) { %>
+                                                    <option value="<%= classItem.id %>"><%= classItem.name %></option>
+                                                <% }); %>
+                                            </select>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="editCapacity">Sĩ số:</label>
+                                            <input type="number" id="editCapacity" name="capacity" min="1" required>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="editTeacher">Giảng viên:</label>
+                                            <select id="editTeacher" name="teacher_id">
+                                                <option value="">-- Chọn giảng viên --</option>
+                                                <% teachers.forEach(function(teacher) { %>
+                                                    <option value="<%= teacher.id %>"><%= teacher.name %></option>
+                                                <% }); %>
+                                            </select>
+                                        </div>
+                                        <div id="editWarning" class="warning-message" style="display:none;"></div>
+                                    </form>
+                                    <div class="step-navigation">
+                                        <button class="btn btn-cancel close-edit-btn">Hủy</button>
+                                        <button id="edit-step1-next" class="btn btn-primary btn-next">Tiếp theo</button>
+                                    </div>
+                                </div>
+
+                                <!-- Step 2: Chỉnh sửa lịch học -->
+                                <div id="edit-step2-content" class="edit-step-content">
+                                    <div class="schedule-builder">
+                                        <h3>Quản lý lịch học cho học phần</h3>
+                                        
+                                        <div class="schedule-list">
+                                            <div id="edit-no-schedules-message" class="text-center py-3" style="display: none;">
+                                                <p class="text-muted">Chưa có lịch học nào được thêm</p>
+                                            </div>
+                                            <div id="edit-schedules-table" class="table-responsive">
+                                                <table class="table table-bordered table-striped">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Thứ</th>
+                                                            <th>Thời gian</th>
+                                                            <th>Loại</th>
+                                                            <th>Thao tác</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody id="edit-schedule-list">
+                                                        <!-- Sẽ được điền bằng JavaScript -->
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="add-schedule-button mt-3">
+                                            <button id="edit-add-schedule-btn" class="btn btn-sm btn-primary">
+                                                <i class="fas fa-plus"></i> Thêm lịch học
+                                            </button>
+                                        </div>
+                                        
+                                        <div id="edit-schedule-builder-warning" class="warning-message mt-3" style="display:none;"></div>
+                                    </div>
+                                    
+                                    <div class="step-navigation">
+                                        <button id="edit-step2-prev" class="btn btn-secondary">Quay lại</button>
+                                        <button id="edit-step2-next" class="btn btn-primary">Tiếp theo</button>
+                                    </div>
+                                </div>
+
+                                <!-- Step 3: Xác nhận thông tin -->
+                                <div id="edit-step3-content" class="edit-step-content">
+                                    <h3>Xác nhận thông tin học phần</h3>
+                                    <div class="confirmation-content">
+                                        <div class="confirmation-section">
+                                            <h4>Thông tin cơ bản</h4>
+                                            <div class="confirmation-item">
+                                                <span class="label">Mã học phần:</span>
+                                                <span id="edit-confirm-class-code" class="value"></span>
+                                            </div>
+                                            <div class="confirmation-item">
+                                                <span class="label">Tên học phần:</span>
+                                                <span id="edit-confirm-name" class="value"></span>
+                                            </div>
+                                            <div class="confirmation-item">
+                                                <span class="label">Loại:</span>
+                                                <span id="edit-confirm-type" class="value"></span>
+                                            </div>
+                                            <div class="confirmation-item">
+                                                <span class="label">Môn học:</span>
+                                                <span id="edit-confirm-subject" class="value"></span>
+                                            </div>
+                                            <div class="confirmation-item">
+                                                <span class="label">Học kỳ:</span>
+                                                <span id="edit-confirm-semester" class="value"></span>
+                                            </div>
+                                            <div class="confirmation-item">
+                                                <span class="label">Lớp:</span>
+                                                <span id="edit-confirm-class" class="value"></span>
+                                            </div>
+                                            <div class="confirmation-item">
+                                                <span class="label">Sĩ số:</span>
+                                                <span id="edit-confirm-capacity" class="value"></span>
+                                            </div>
+                                            <div class="confirmation-item">
+                                                <span class="label">Giảng viên:</span>
+                                                <span id="edit-confirm-teacher" class="value"></span>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="confirmation-section">
+                                            <h4>Lịch học (<span id="edit-confirm-schedule-count">0</span>)</h4>
+                                            <ul id="edit-confirm-schedules"></ul>
+                                        </div>
+                                    </div>
+                                    
+                                    <div id="edit-confirmWarning" class="warning-message" style="display:none;"></div>
+                                    
+                                    <div class="step-navigation">
+                                        <button id="edit-step3-prev" class="btn btn-secondary">Quay lại</button>
+                                        <button id="update-classsession-btn" class="btn btn-success">Lưu thay đổi</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Thay thế modal Add ClassSession hiện tại bằng modal mới có nhiều bước -->
+                    <div id="addClassSessionModal" class="modal">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h2>Thêm học phần mới</h2>
+                                <span class="close-add-btn">&times;</span>
+                            </div>
+                            <div class="modal-body">
+                                <!-- Hiển thị các bước tạo -->
+                                <div class="step-indicator">
+                                    <div class="step active" data-step="1">
+                                        <div class="step-number">1</div>
+                                        <div class="step-title">Thông tin học phần</div>
+                                    </div>
+                                    <div class="step" data-step="2">
+                                        <div class="step-number">2</div>
+                                        <div class="step-title">Lịch học</div>
+                                    </div>
+                                    <div class="step" data-step="3">
+                                        <div class="step-number">3</div>
+                                        <div class="step-title">Xác nhận</div>
+                                    </div>
+                                </div>
+
+                                <!-- Step 1: Thông tin học phần -->
+                                <div id="step1-content" class="step-content active">
+                                    <form id="addClassSessionForm">
+                                        <div class="form-group">
+                                            <label for="addClassCode">Mã học phần:</label>
+                                            <input type="text" id="addClassCode" name="class_code" required>
+                                            <div id="addClassCodeWarning" class="warning-text" style="display:none;"></div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="addName">Tên học phần:</label>
+                                            <input type="text" id="addName" name="name" required>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="addType">Loại học phần:</label>
+                                            <select id="addType" name="type" required>
+                                                <option value="">-- Chọn loại học phần --</option>
+                                                <option value="LT">Lý thuyết (LT)</option>
+                                                <option value="TH">Thực hành (TH)</option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="addSubject">Môn học:</label>
+                                            <select id="addSubject" name="sub_id" required>
+                                                <option value="">-- Chọn môn học --</option>
+                                                <% subjects.forEach(function(subject) { %>
+                                                    <option value="<%= subject.id %>"><%= subject.name %></option>
+                                                <% }); %>
+                                            </select>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="addSemester">Học kỳ:</label>
+                                            <select id="addSemester" name="semester_id" required>
+                                                <option value="">-- Chọn học kỳ --</option>
+                                                <% semesters.forEach(function(semester) { %>
+                                                    <option value="<%= semester.id %>"><%= semester.name %></option>
+                                                <% }); %>
+                                            </select>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="addClass">Lớp:</label>
+                                            <select id="addClass" name="class_id" required>
+                                                <option value="">-- Chọn lớp --</option>
+                                                <% classes.forEach(function(classItem) { %>
+                                                    <option value="<%= classItem.id %>"><%= classItem.name %></option>
+                                                <% }); %>
+                                            </select>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="addCapacity">Sĩ số:</label>
+                                            <input type="number" id="addCapacity" name="capacity" min="1" required>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="addTeacher">Giảng viên:</label>
+                                            <select id="addTeacher" name="teacher_id">
+                                                <option value="">-- Chọn giảng viên --</option>
+                                                <% teachers.forEach(function(teacher) { %>
+                                                    <option value="<%= teacher.id %>"><%= teacher.name %></option>
+                                                <% }); %>
+                                            </select>
+                                        </div>
+                                        <div id="addWarning" class="warning-message" style="display:none;"></div>
+                                    </form>
+                                    <div class="step-navigation">
+                                        <button class="btn btn-cancel close-add-btn">Hủy</button>
+                                        <button id="step1-next" class="btn btn-primary btn-next">Tiếp theo</button>
+                                    </div>
+                                </div>
+
+                                <!-- Step 2: Thêm lịch học -->
+                                <div id="step2-content" class="step-content">
+                                    <div class="schedule-builder">
+                                        <h3>Thêm lịch học cho học phần</h3>
+                                        
+                                        <div class="schedule-list">
+                                            <div id="no-schedules-message">Chưa có lịch học nào được thêm</div>
+                                            <ul id="added-schedules-list"></ul>
+                                        </div>
+                                        
+                                        <div class="add-schedule-button">
+                                            <button id="add-schedule-btn" class="btn btn-sm btn-primary">
+                                                <i class="fas fa-plus"></i> Thêm lịch học
+                                            </button>
+                                        </div>
+                                        
+                                        <div id="schedule-builder-warning" class="warning-message" style="display:none;"></div>
+                                    </div>
+                                    
+                                    <div class="step-navigation">
+                                        <button id="step2-prev" class="btn btn-secondary">Quay lại</button>
+                                        <button id="step2-next" class="btn btn-primary">Tiếp theo</button>
+                                    </div>
+                                </div>
+
+                                <!-- Step 3: Xác nhận thông tin -->
+                                <div id="step3-content" class="step-content">
+                                    <h3>Xác nhận thông tin học phần</h3>
+                                    <div class="confirmation-content">
+                                        <div class="confirmation-section">
+                                            <h4>Thông tin cơ bản</h4>
+                                            <div class="confirmation-item">
+                                                <span class="label">Mã học phần:</span>
+                                                <span id="confirm-class-code" class="value"></span>
+                                            </div>
+                                            <div class="confirmation-item">
+                                                <span class="label">Tên học phần:</span>
+                                                <span id="confirm-name" class="value"></span>
+                                            </div>
+                                            <div class="confirmation-item">
+                                                <span class="label">Loại:</span>
+                                                <span id="confirm-type" class="value"></span>
+                                            </div>
+                                            <div class="confirmation-item">
+                                                <span class="label">Môn học:</span>
+                                                <span id="confirm-subject" class="value"></span>
+                                            </div>
+                                            <div class="confirmation-item">
+                                                <span class="label">Học kỳ:</span>
+                                                <span id="confirm-semester" class="value"></span>
+                                            </div>
+                                            <div class="confirmation-item">
+                                                <span class="label">Lớp:</span>
+                                                <span id="confirm-class" class="value"></span>
+                                            </div>
+                                            <div class="confirmation-item">
+                                                <span class="label">Sĩ số:</span>
+                                                <span id="confirm-capacity" class="value"></span>
+                                            </div>
+                                            <div class="confirmation-item">
+                                                <span class="label">Giảng viên:</span>
+                                                <span id="confirm-teacher" class="value"></span>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="confirmation-section">
+                                            <h4>Lịch học (<span id="confirm-schedule-count">0</span>)</h4>
+                                            <ul id="confirm-schedules"></ul>
+                                        </div>
+                                    </div>
+                                    
+                                    <div id="confirmWarning" class="warning-message" style="display:none;"></div>
+                                    
+                                    <div class="step-navigation">
+                                        <button id="step3-prev" class="btn btn-secondary">Quay lại</button>
+                                        <button id="save-classsession-btn" class="btn btn-success">Lưu học phần</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Modal thêm lịch học -->
+                    <div id="addScheduleModal" class="modal">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h2>Thêm lịch học</h2>
+                                <span class="close-schedule-btn">&times;</span>
+                            </div>
+                            <div class="modal-body">
+                                <form id="addScheduleForm">
+                                    <div class="form-group">
+                                        <label for="scheduleWeekday">Thứ:</label>
+                                        <select id="scheduleWeekday" name="weekday" required>
+                                            <option value="">-- Chọn thứ --</option>
+                                            <option value="1">Thứ hai</option>
+                                            <option value="2">Thứ ba</option>
+                                            <option value="3">Thứ tư</option>
+                                            <option value="4">Thứ năm</option>
+                                            <option value="5">Thứ sáu</option>
+                                            <option value="6">Thứ bảy</option>
+                                            <option value="0">Chủ nhật</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="scheduleTime">Khung giờ:</label>
+                                        <select id="scheduleTime" name="id_time" required>
+                                            <option value="">-- Chọn khung giờ --</option>
+                                            <!-- Các khung giờ sẽ được thêm bằng JavaScript -->
+                                        </select>
+                                    </div>
+                                    
+                                    <div id="schedule-conflict-warning" class="warning-message" style="display:none;"></div>
+                                    
+                                    <div class="form-actions">
+                                        <button type="submit" class="btn btn-primary">Thêm lịch</button>
+                                        <button type="button" class="btn btn-cancel close-schedule-btn">Hủy</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Delete Confirmation Modal -->
+                    <div id="deleteConfirmModal" class="modal">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h2>Xác nhận xóa</h2>
+                                <span class="close-delete-btn">&times;</span>
+                            </div>
+                            <div class="modal-body">
+                                <p class="warning-text">Bạn có chắc chắn muốn xóa học phần này?</p>
+                                <div id="deleteClassSessionInfo"></div>
+                                <div id="deleteWarningMessage" style="display: none;"></div>
+                                <div class="form-actions">
+                                    <button id="confirmDeleteBtn" class="btn btn-danger">Xóa</button>
+                                    <button class="btn btn-cancel close-delete-btn">Hủy</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Notification Modal -->
+                    <div id="notificationModal" class="notification-modal">
+                        <div class="notification-content">
+                            <div class="notification-icon">
+                                <i class="fas fa-check-circle success-icon"></i>
+                                <i class="fas fa-exclamation-circle error-icon"></i>
+                            </div>
+                            <div class="notification-text">
+                                <p id="notificationMessage"></p>
+                            </div>
+                        </div>
+                    </div>
+        </div>
+
+        <div class="loading-overlay">
+            <div class="loading-spinner"></div>
+        </div>
+
+        <script src="/js/adminJs/classsessionManagementModal.js"></script>
+        <script src="/js/adminJs/pagination.js"></script>
+        <script src="/js/adminJs/sidebarEffect.js"></script>
+</body>
+
+</html>

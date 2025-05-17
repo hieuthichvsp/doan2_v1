@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý đăng ký môn học</title>
+    <link rel="stylesheet" href="https://pro.fontawesome.com/releases/v5.10.0/css/all.css"
+        integrity="sha384-AYmEC3Yw5cVb3ZcuHtOA93w35dYTsvhLPVnYs9eStHfGJvOvKxVfELGroGkvsg+p" crossorigin="anonymous" />
+    <link rel="stylesheet" href="/css/Dashboardstyle.css">
+    <link rel="stylesheet" href="/css/userManagementStyle.css">
+    <link rel="stylesheet" href="/css/enrollmentManagementStyle.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"
+        integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+    <meta name="current-user-id" content="<%= user.id %>">
+</head>
+
+<body>
+    <%- include('../layouts/header') %>
+        <div class="content">
+            <div class="header-row">
+                <h2>Quản lý đăng ký môn học</h2>
+                <div class="search-add-container">
+                    <div class="filter-container">
+                        <select id="classSessionFilter" class="filter-select">
+                            <option value="">Tất cả học phần</option>
+                            <% classSessions.forEach(function(classSession) { %>
+                                <option value="<%= classSession.id %>" <%= classSessionFilter==classSession.id ? 'selected' : '' %>>
+                                    <%= classSession.class_code %> - <%= classSession.subject?.name || 'N/A' %>
+                                </option>
+                                <% }); %>
+                        </select>
+                    </div>
+                    <div class="search-container">
+                        <form action="/admin/enrollmentManagement" method="GET" id="searchForm">
+                            <input type="hidden" name="classSession" id="classSessionInput" value="<%= classSessionFilter %>">
+                            <input type="text" name="searchCode" placeholder="Tìm kiếm theo mã sinh viên..."
+                                value="<%= typeof searchCode !== 'undefined' ? searchCode : '' %>">
+                            <button type="submit"><i class="fas fa-search"></i></button>
+                        </form>
+                    </div>
+                    <button id="addEnrollmentBtn" class="add-user-btn"><i class="fas fa-plus"></i> Đăng ký môn học</button>
+                    <button id="bulkEnrollBtn" class="add-user-btn bulk-btn"><i class="fas fa-users"></i> Đăng ký hàng loạt</button>
+                </div>
+
+                <% if (typeof searchResults !=='undefined' && searchResults) { %>
+                    <div class="search-results-info">
+                        <p>Kết quả tìm kiếm cho "<%= searchCode || 'Tất cả sinh viên' %>" <%= classSessionFilter ? 'trong lớp học phần được chọn' : '' %></p>
+                    </div>
+                <% } %>
+            </div>
+
+            <table class="user-table">
+                <thead>
+                    <tr>
+                        <th>STT</th>
+                        <th>Mã sinh viên</th>
+                        <th>Tên sinh viên</th>
+                        <th>Mã học phần</th>
+                        <th>Tên học phần</th>
+                        <th>Học kỳ</th>
+                        <th>Ngày đăng ký</th>
+                        <th>Hành động</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% if (enrollments.length > 0) { %>
+                        <% enrollments.forEach((enrollment, index) => { %>
+                        <tr>
+                            <td><%= index + 1 %></td>
+                            <td><%= enrollment.student?.user_code || 'N/A' %></td>
+                            <td><%= enrollment.student?.name || 'N/A' %></td>
+                            <td><%= enrollment.classSession?.class_code || 'N/A' %></td>
+                            <td>
+                                <%= enrollment.classSession?.subject?.name || 'N/A' %>
+                                <span class="enrollment-type">
+                                    (<%= enrollment.classSession?.type === 'LT' ? 'LT' : 'TH' %>)
+                                </span>
+                            </td>
+                            <td><%= enrollment.classSession?.semester?.name || 'N/A' %></td>
+                            <td><%= new Date(enrollment.createdAt).toLocaleDateString('vi-VN') %></td>
+                            <td class="action-btns">
+                                <i class="fas fa-eye view-enrollment-btn" data-id="<%= enrollment.id %>" title="Xem chi tiết"></i>
+                                <i class="fas fa-trash delete-enrollment-btn" data-id="<%= enrollment.id %>" title="Hủy đăng ký"></i>
+                            </td>
+                        </tr>
+                        <% }) %>
+                    <% } else { %>
+                        <tr>
+                            <td colspan="8" class="no-results">Không có đăng ký môn học nào.</td>
+                        </tr>
+                    <% } %>
+                </tbody>
+            </table>
+
+            <!-- Phân trang -->
+            <div class="pagination-container">
+                <div class="pagination-info">
+                    Hiển thị <%= enrollments.length %> kết quả trong tổng số <%= pagination.totalEnrollments %> đăng ký
+                </div>
+                <div class="pagination" id="pagination-container" data-current-page="<%= pagination.page %>"
+                    data-total-pages="<%= pagination.totalPages %>" data-search-code="<%= searchCode %>">
+                    <!-- Nút trang đầu và trang trước -->
+                    <% if (pagination.page > 1) { %>
+                        <a href="?page=1<%= searchCode ? '&searchCode=' + searchCode : '' %><%= classSessionFilter ? '&classSession=' + classSessionFilter : '' %>"
+                            class="pagination-link first-page">
+                            <i class="fas fa-angle-double-left"></i>
+                        </a>
+                        <a href="?page=<%= pagination.page - 1 %><%= searchCode ? '&searchCode=' + searchCode : '' %><%= classSessionFilter ? '&classSession=' + classSessionFilter : '' %>"
+                            class="pagination-link prev-page">
+                            <i class="fas fa-angle-left"></i>
+                        </a>
+                    <% } else { %>
+                        <span class="pagination-link disabled first-page"><i class="fas fa-angle-double-left"></i></span>
+                        <span class="pagination-link disabled prev-page"><i class="fas fa-angle-left"></i></span>
+                    <% } %>
+
+                    <!-- Đoạn số trang sẽ được tạo bằng JavaScript -->
+                    <span id="page-numbers"></span>
+
+                    <!-- Nút trang sau và trang cuối -->
+                    <% if (pagination.page < pagination.totalPages) { %>
+                        <a href="?page=<%= pagination.page + 1 %><%= searchCode ? '&searchCode=' + searchCode : '' %><%= classSessionFilter ? '&classSession=' + classSessionFilter : '' %>"
+                            class="pagination-link next-page">
+                            <i class="fas fa-angle-right"></i>
+                        </a>
+                        <a href="?page=<%= pagination.totalPages %><%= searchCode ? '&searchCode=' + searchCode : '' %><%= classSessionFilter ? '&classSession=' + classSessionFilter : '' %>"
+                            class="pagination-link last-page">
+                            <i class="fas fa-angle-double-right"></i>
+                        </a>
+                    <% } else { %>
+                        <span class="pagination-link disabled next-page"><i class="fas fa-angle-right"></i></span>
+                        <span class="pagination-link disabled last-page"><i class="fas fa-angle-double-right"></i></span>
+                    <% } %>
+                </div>
+            </div>
+
+            <!-- View Enrollment Modal -->
+            <div id="viewEnrollmentModal" class="modal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h2>Chi tiết đăng ký môn học</h2>
+                        <span class="close-view-btn">&times;</span>
+                    </div>
+                    <div class="modal-body">
+                        <div class="user-info-container">
+                            <h3>Thông tin sinh viên</h3>
+                            <div class="info-row">
+                                <div class="info-label">Mã sinh viên:</div>
+                                <div class="info-value" id="viewStudentCode"></div>
+                            </div>
+                            <div class="info-row">
+                                <div class="info-label">Họ và tên:</div>
+                                <div class="info-value" id="viewStudentName"></div>
+                            </div>
+                            <div class="info-row">
+                                <div class="info-label">Email:</div>
+                                <div class="info-value" id="viewStudentEmail"></div>
+                            </div>
+                            
+                            <h3>Thông tin học phần</h3>
+                            <div class="info-row">
+                                <div class="info-label">Mã học phần:</div>
+                                <div class="info-value" id="viewClassCode"></div>
+                            </div>
+                            <div class="info-row">
+                                <div class="info-label">Tên học phần:</div>
+                                <div class="info-value" id="viewClassName"></div>
+                            </div>
+                            <div class="info-row">
+                                <div class="info-label">Loại:</div>
+                                <div class="info-value" id="viewClassType"></div>
+                            </div>
+                            <div class="info-row">
+                                <div class="info-label">Học kỳ:</div>
+                                <div class="info-value" id="viewSemester"></div>
+                            </div>
+                            <div class="info-row">
+                                <div class="info-label">Ngày đăng ký:</div>
+                                <div class="info-value" id="viewEnrollmentDate"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary close-view-btn">Đóng</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Add Enrollment Modal -->
+            <div id="addEnrollmentModal" class="modal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h2>Đăng ký môn học</h2>
+                        <span class="close-add-btn">&times;</span>
+                    </div>
+                    <div class="modal-body">
+                        <form id="addEnrollmentForm">
+                            <div class="form-group">
+                                <label for="addClassSession">Học phần:</label>
+                                <select id="addClassSession" name="id_classsession" required>
+                                    <option value="">-- Chọn học phần --</option>
+                                    <% classSessions.forEach(function(classSession) { %>
+                                        <option value="<%= classSession.id %>">
+                                            <%= classSession.class_code %> - <%= classSession.subject?.name || 'N/A' %> 
+                                            (<%= classSession.type === 'LT' ? 'Lý thuyết' : 'Thực hành' %>)
+                                        </option>
+                                    <% }); %>
+                                </select>
+                                <div id="classCapacityInfo" class="mt-2" style="display:none;"></div>
+                            </div>
+                            <div class="form-group">
+                                <label for="addStudent">Sinh viên:</label>
+                                <select id="addStudent" name="id_student" required>
+                                    <option value="">-- Chọn sinh viên --</option>
+                                    <!-- Sẽ được điền bởi JavaScript -->
+                                </select>
+                            </div>
+
+                            <div class="form-actions">
+                                <button type="submit" class="btn btn-save">Đăng ký</button>
+                                <button type="button" class="btn btn-cancel close-add-btn">Hủy</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bulk Enrollment Modal -->
+            <div id="bulkEnrollmentModal" class="modal">
+                <div class="modal-content bulk-modal-content">
+                    <div class="modal-header">
+                        <h2>Đăng ký môn học hàng loạt</h2>
+                        <span class="close-bulk-btn">&times;</span>
+                    </div>
+                    <div class="modal-body">
+                        <form id="bulkEnrollmentForm">
+                            <div class="form-group">
+                                <label for="bulkClassSession">Học phần:</label>
+                                <select id="bulkClassSession" name="classSessionId" required>
+                                    <option value="">-- Chọn học phần --</option>
+                                    <% classSessions.forEach(function(classSession) { %>
+                                        <option value="<%= classSession.id %>">
+                                            <%= classSession.class_code %> - <%= classSession.subject?.name || 'N/A' %> 
+                                            (<%= classSession.type === 'LT' ? 'Lý thuyết' : 'Thực hành' %>)
+                                        </option>
+                                    <% }); %>
+                                </select>
+                                <div id="bulkClassCapacityInfo" class="mt-2" style="display:none;"></div>
+                            </div>
+                            
+                            <div class="bulk-student-selection">
+                                <div class="bulk-section-header">
+                                    <span>Chọn sinh viên đăng ký</span>
+                                </div>
+                                <div class="student-selection">
+                                    <div class="selection-column">
+                                        <h4>Sinh viên khả dụng</h4>
+                                        <div class="small-search">
+                                            <input type="text" id="availableStudentSearch" placeholder="Tìm kiếm...">
+                                            <i class="fas fa-search"></i>
+                                        </div>
+                                        <div class="student-list" id="availableStudents">
+                                            <!-- Sẽ được điền bởi JavaScript -->
+                                        </div>
+                                        <div class="student-count">
+                                            <span id="availableStudentCount">0</span> sinh viên khả dụng
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="selection-actions">
+                                        <button type="button" class="btn-action" id="addSelectedStudents" title="Thêm sinh viên đã chọn">
+                                            <i class="fas fa-chevron-right"></i>
+                                        </button>
+                                        <button type="button" class="btn-action" id="addAllStudents" title="Thêm tất cả sinh viên">
+                                            <i class="fas fa-angle-double-right"></i>
+                                        </button>
+                                        <button type="button" class="btn-action" id="removeSelectedStudents" title="Xóa sinh viên đã chọn">
+                                            <i class="fas fa-chevron-left"></i>
+                                        </button>
+                                        <button type="button" class="btn-action" id="removeAllStudents" title="Xóa tất cả sinh viên">
+                                            <i class="fas fa-angle-double-left"></i>
+                                        </button>
+                                    </div>
+                                    
+                                    <div class="selection-column">
+                                        <h4>Sinh viên đã chọn</h4>
+                                        <div class="small-search">
+                                            <input type="text" id="selectedStudentSearch" placeholder="Tìm kiếm...">
+                                            <i class="fas fa-search"></i>
+                                        </div>
+                                        <div class="student-list" id="selectedStudents">
+                                            <!-- Sẽ được điền bởi JavaScript -->
+                                        </div>
+                                        <div class="student-count">
+                                            <span id="selectedStudentCount">0</span> sinh viên đã chọn
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-actions">
+                                <button type="submit" class="btn btn-save">Đăng ký</button>
+                                <button type="button" class="btn btn-cancel close-bulk-btn">Hủy</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Delete Confirmation Modal -->
+            <div id="deleteConfirmModal" class="modal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h2>Xác nhận hủy đăng ký</h2>
+                        <span class="close-delete-btn">&times;</span>
+                    </div>
+                    <div class="modal-body">
+                        <p class="warning-text">Bạn có chắc chắn muốn hủy đăng ký môn học này không?</p>
+                        <p id="deleteEnrollmentInfo"></p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" id="confirmDeleteBtn" class="btn btn-danger">Xác nhận</button>
+                        <button type="button" class="btn btn-secondary close-delete-btn">Hủy</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Notification Modal -->
+            <div id="notificationModal" class="notification-modal">
+                <div class="notification-content">
+                    <div class="notification-icon">
+                        <i class="fas fa-check-circle"></i>
+                        <i class="fas fa-trash-alt" style="display:none;"></i>
+                        <i class="fas fa-exclamation-triangle" style="display:none;"></i>
+                    </div>
+                    <div class="notification-text">
+                        <p id="notificationMessage">Thông báo</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- JavaScript files -->
+        <script src="/js/adminJs/enrollmentManagementModal.js"></script>
+        <script src="/js/adminJs/sidebarEffect.js"></script>
+        <script src="/js/adminJs/pagination.js"></script>
+</body>
+
+</html>

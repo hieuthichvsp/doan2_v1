@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý người dùng</title>
+    <link rel="stylesheet" href="https://pro.fontawesome.com/releases/v5.10.0/css/all.css"
+        integrity="sha384-AYmEC3Yw5cVb3ZcuHtOA93w35dYTsvhLPVnYs9eStHfGJvOvKxVfELGroGkvsg+p" crossorigin="anonymous" />
+    <link rel="stylesheet" href="/css/Dashboardstyle.css">
+    <link rel="stylesheet" href="/css/userManagementStyle.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"
+        integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+    <meta name="current-user-id" content="<%= user.id %>">
+</head>
+
+<body>
+    <%- include('../layouts/header') %>
+        <div class="content">
+            <div class="header-row">
+                <h2>Danh sách người dùng</h2>
+                <div class="search-add-container">
+                    <div class="search-container">
+                        <form action="/admin/userManagement" method="GET">
+                            <input type="text" name="searchCode" placeholder="Tìm kiếm theo mã số..."
+                                value="<%= typeof searchCode !== 'undefined' ? searchCode : '' %>">
+                            <button type="submit"><i class="fas fa-search"></i></button>
+                        </form>
+                    </div>
+                    <button id="addUserBtn" class="add-user-btn"><i class="fas fa-plus"></i> Thêm người dùng</button>
+                </div>
+
+                <% if (typeof searchResults !=='undefined' && searchResults) { %>
+                    <div class="search-results-info">
+                        <!-- Existing search results info -->
+                    </div>
+                    <% } %>
+            </div>
+
+            <table class="user-table">
+                <thead>
+                    <tr>
+                        <th>STT</th>
+                        <th>Mã số</th>
+                        <th>Họ và Tên</th>
+                        <th>Email</th>
+                        <th>Ngày sinh</th>
+                        <th>Địa chỉ</th>
+                        <th>Vai trò</th>
+                        <th>Khoa</th>
+                        <th>Hành động</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% users.forEach((user,index)=> { %>
+                        <tr>
+                            <td>
+                                <%= index +1 %>
+                            </td>
+                            <td>
+                                <%= user.user_code %>
+                            </td>
+                            <td>
+                                <%= user.name %>
+                            </td>
+                            <td>
+                                <%= user.email %>
+                            </td>
+                            <td>
+                                <%= user.birthday ? new Date(user.birthday).toLocaleDateString('vi-VN') : 'N/A' %>
+                            </td>
+                            <td>
+                                <%= user.address || 'N/A' %>
+                            </td>
+                            <td>
+                                <%= user.role ? user.role.name : 'N/A' %>
+                            </td>
+                            <td>
+                                <%= user.department ? user.department.name : 'N/A' %>
+                            </td>
+                            <td class="action-btns">
+                                <i class="fas fa-eye view-user-btn" data-id="<%= user.id %>" title="Xem chi tiết"></i>
+                                <i class="fas fa-edit edit-user-btn" data-id="<%= user.id %>" title="Sửa"></i>
+                                <i class="fas fa-trash delete-user-btn" data-id="<%= user.id %>" title="Xóa"></i>
+                            </td>
+                        </tr>
+                        <% }) %>
+                </tbody>
+            </table>
+
+            <!-- Phân trang -->
+            <div class="pagination-container">
+                <div class="pagination" id="pagination-container" data-current-page="<%= pagination.page %>"
+                    data-total-pages="<%= pagination.totalPages %>" data-search-code="<%= searchCode %>">
+                    <!-- Nút trang đầu và trang trước -->
+                    <% if (pagination.page> 1) { %>
+                        <a href="?page=1<%= searchCode ? '&searchCode=' + searchCode : '' %>"
+                            class="pagination-link first-page">
+                            <i class="fas fa-angle-double-left"></i>
+                        </a>
+                        <a href="?page=<%= pagination.page - 1 %><%= searchCode ? '&searchCode=' + searchCode : '' %>"
+                            class="pagination-link prev-page">
+                            <i class="fas fa-angle-left"></i>
+                        </a>
+                        <% } else { %>
+                            <span class="pagination-link disabled first-page"><i
+                                    class="fas fa-angle-double-left"></i></span>
+                            <span class="pagination-link disabled prev-page"><i class="fas fa-angle-left"></i></span>
+                            <% } %>
+
+                                <!-- Đoạn số trang sẽ được tạo bằng JavaScript -->
+                                <span id="page-numbers"></span>
+
+                                <!-- Nút trang sau và trang cuối -->
+                                <% if (pagination.page < pagination.totalPages) { %>
+                                    <a href="?page=<%= pagination.page + 1 %><%= searchCode ? '&searchCode=' + searchCode : '' %>"
+                                        class="pagination-link next-page">
+                                        <i class="fas fa-angle-right"></i>
+                                    </a>
+                                    <a href="?page=<%= pagination.totalPages %><%= searchCode ? '&searchCode=' + searchCode : '' %>"
+                                        class="pagination-link last-page">
+                                        <i class="fas fa-angle-double-right"></i>
+                                    </a>
+                                    <% } else { %>
+                                        <span class="pagination-link disabled next-page"><i
+                                                class="fas fa-angle-right"></i></span>
+                                        <span class="pagination-link disabled last-page"><i
+                                                class="fas fa-angle-double-right"></i></span>
+                                        <% } %>
+                </div>
+            </div>
+
+            <!-- View User Modal -->
+            <div id="viewUserModal" class="modal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h2>Chi tiết người dùng</h2>
+                        <span class="close-view-btn">&times;</span>
+                    </div>
+                    <div class="modal-body">
+                        <div class="user-info-container">
+                            <div class="info-row">
+                                <div class="info-label">Mã số:</div>
+                                <div class="info-value" id="viewUserCode"></div>
+                            </div>
+                            <div class="info-row">
+                                <div class="info-label">Họ và tên:</div>
+                                <div class="info-value" id="viewName"></div>
+                            </div>
+                            <div class="info-row">
+                                <div class="info-label">Email:</div>
+                                <div class="info-value" id="viewEmail"></div>
+                            </div>
+                            <div class="info-row">
+                                <div class="info-label">Ngày sinh:</div>
+                                <div class="info-value" id="viewBirthday"></div>
+                            </div>
+                            <div class="info-row">
+                                <div class="info-label">Địa chỉ:</div>
+                                <div class="info-value" id="viewAddress"></div>
+                            </div>
+                            <div class="info-row">
+                                <div class="info-label">Vai trò:</div>
+                                <div class="info-value" id="viewRole"></div>
+                            </div>
+                            <div class="info-row">
+                                <div class="info-label">Khoa:</div>
+                                <div class="info-value" id="viewDepartment"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary close-view-btn">Đóng</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Edit User Modal Structure -->
+            <div id="editUserModal" class="modal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h2>Chỉnh sửa thông tin người dùng</h2>
+                        <span class="close-edit-btn">&times;</span>
+                    </div>
+                    <div class="modal-body">
+                        <form id="editUserForm">
+                            <!-- Hidden input to store user ID -->
+                            <input type="hidden" id="editUserId" name="userId">
+
+                            <div class="form-group">
+                                <label for="editUserCode">Mã số:</label>
+                                <input type="text" id="editUserCode" name="user_code" readonly required>
+                            </div>
+                            <div class="form-group">
+                                <label for="editName">Họ và Tên:</label>
+                                <input type="text" id="editName" name="name" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="editEmail">Email:</label>
+                                <input type="email" id="editEmail" name="email" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="editBirthday">Ngày sinh:</label>
+                                <input type="date" id="editBirthday" name="birthday">
+                            </div>
+                            <div class="form-group">
+                                <label for="editAddress">Địa chỉ:</label>
+                                <input type="text" id="editAddress" name="address">
+                            </div>
+                            <div class="form-group">
+                                <label for="editRole">Vai trò:</label>
+                                <select id="editRole" name="role_id" required>
+                                    <!-- Options will be populated by JavaScript -->
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="editDepartment">Khoa:</label>
+                                <select id="editDepartment" name="department_id">
+                                    <option value="">Không có Khoa</option>
+                                    <!-- Options will be populated by JavaScript -->
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="editPassword">Mật khẩu mới (để trống nếu không đổi):</label>
+                                <input type="password" id="editPassword" name="password" autocomplete="new-password">
+                            </div>
+
+                            <div class="form-actions">
+                                <button type="submit" class="btn btn-save">Lưu thay đổi</button>
+                                <button type="button" class="btn btn-cancel close-edit-btn">Hủy</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Add User Modal Structure -->
+            <div id="addUserModal" class="modal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h2>Thêm người dùng mới</h2>
+                        <span class="close-add-btn">&times;</span>
+                    </div>
+                    <div class="modal-body">
+                        <form id="addUserForm">
+                            <div class="form-group">
+                                <label for="addUserCode">Mã số:</label>
+                                <input type="text" id="addUserCode" name="user_code" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="addName">Họ và Tên:</label>
+                                <input type="text" id="addName" name="name" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="addEmail">Email:</label>
+                                <input type="email" id="addEmail" name="email" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="addBirthday">Ngày sinh:</label>
+                                <input type="date" id="addBirthday" name="birthday">
+                            </div>
+                            <div class="form-group">
+                                <label for="addAddress">Địa chỉ:</label>
+                                <input type="text" id="addAddress" name="address">
+                            </div>
+                            <div class="form-group">
+                                <label for="addPassword">Mật khẩu:</label>
+                                <input type="password" id="addPassword" name="password" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="addRole">Vai trò:</label>
+                                <select id="addRole" name="role_id" required>
+                                    <option value="">-- Chọn vai trò --</option>
+                                    <!-- Options will be populated by JavaScript -->
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="addDepartment">Khoa:</label>
+                                <select id="addDepartment" name="department_id">
+                                    <option value="">Không có Khoa</option>
+                                    <!-- Options will be populated by JavaScript -->
+                                </select>
+                            </div>
+                            <div class="form-actions">
+                                <button type="submit" class="btn btn-save">Lưu</button>
+                                <button type="button" class="btn btn-cancel close-add-btn">Hủy</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Delete Confirmation Modal -->
+            <div id="deleteConfirmModal" class="modal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h2>Xác nhận xóa</h2>
+                        <span class="close-delete-btn">&times;</span>
+                    </div>
+                    <div class="modal-body">
+                        <p class="warning-text">Bạn có chắc chắn muốn xóa người dùng này không?</p>
+                        <p id="deleteUserInfo"></p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" id="confirmDeleteBtn" class="btn btn-danger">Xác nhận</button>
+                        <button type="button" class="btn btn-secondary close-delete-btn">Hủy</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Notification Modal -->
+            <div id="notificationModal" class="notification-modal">
+                <div class="notification-content">
+                    <div class="notification-icon">
+                        <i class="fas fa-check-circle"></i>
+                        <i class="fas fa-trash-alt" style="display:none;"></i>
+                        <i class="fas fa-exclamation-triangle" style="display:none;"></i>
+                    </div>
+                    <div class="notification-text">
+                        <p id="notificationMessage">Thông báo</p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+        <!-- Sửa lại đường dẫn file JS chính xác -->
+        <script src="/js/adminJs/userManagementModal.js"></script>
+        <!-- Thêm script xử lý hiệu ứng sidebar -->
+        <script src="/js/adminJs/sidebarEffect.js"></script>
+        <script src="/js/adminJs/pagination.js"></script> <!-- Thêm script phân trang -->
+</body>
+
+</html>

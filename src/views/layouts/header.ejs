@@ -1,0 +1,59 @@
+<header>
+    <nav>
+        <input type="checkbox" name="open" id="open">
+        <label for="open" class="open">
+            <i class="fas fa-bars"></i>
+        </label>
+        
+        <!-- Di chuyển phần user section ra ngoài menu để nằm ở góc phải trên cùng -->
+        <div class="user-section-header">
+            <div class="welcome-text">
+                <i class="fas fa-user-circle"></i>
+                <span>Xin chào, <%= locals.user ? user.name : 'Admin' %></span>
+            </div>
+            <a href="/logout" class="logout-btn">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Đăng xuất</span>
+            </a>
+        </div>
+        
+        <div class="menu">
+            <div class="logo">
+                <a href="#">
+                    <img src="/img/vlute_icon.png" alt="">
+                </a>
+            </div>
+            
+            <ul>
+                <li><a href="/admin/dashboard"><span><i class="fas fa-home"></i></span>Trang chủ</a></li>
+                <li><a href="/admin/userManagement"><span><i class="fas fa-user"></i></span>Quản lý người dùng</a>
+                </li>
+                <li><a href="/admin/subjectManagement"><span><i class="fas fa-book"></i></span>Quản lý môn học</a>
+                </li>
+                <li><a href="/admin/classroomManagement"><span><i class="fas fa-chalkboard-teacher"></i></span>Quản
+                        lý
+                        lớp
+                        học</a></li>
+                <li><a href="/admin/departmentManagement"><span><i class="fas fa-graduation-cap"></i></span>Quản
+                        lý
+                        Khoa</a></li>
+                <li><a href="/admin/semesterManagement"><span><i class="fas fa-calendar-alt	"></i></span>Quản
+                        lý
+                        Học Kì</a></li>
+                <li><a href="/admin/timeManagement"><span><i class="fas fa-hourglass"></i></span>Quản lý thời gian tiết
+                        học</a></li>
+                <li><a href="/admin/classSessionManagement"><span><i class="fas fa-book-open"></i></span>Quản lý lớp
+                        học
+                        phần</a></li>
+                <li><a href="/admin/enrollmentManagement"><span><i class="fas fa-pencil-alt"></i></span>Quản lý đăng
+                        ký
+                        môn học</a></li>
+                <li><a href="/admin/rfidManagement"><span><i class="fas fa-qrcode"></i></span>Quản lý thẻ
+                        RFID</a></li>
+                <li><a href="/admin/deviceManagement"><span><i class="fas fa-satellite-dish"></i></span>Quản lý Thiết bị đọc</a></li>
+                <li><a href="/admin/rfidManagement"><span><i class="fas fa-calendar-check"></i></span>Lịch sử điểm danh</a></li>
+                <li><a href="#"><span><i class="fas fa-history"></i></span>Quản lý Logs</a></li>
+            </ul>
+        </div>
+    </nav>
+</header>

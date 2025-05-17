@@ -1,0 +1,469 @@
+.dashboard-container {
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+/* CSS cho trang Dashboard phù hợp với trang quản lý người dùng */
+
+/* Định dạng chính cho phần nội dung */
+.content {
+    padding: 15px;
+    color: black;
+    min-height: 80%;
+    background-color: white;
+    transition: 0.3s ease;
+    overflow-y: auto;
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+    border-radius: 10px;
+    margin-top: 70px;
+    transition: margin-left 0.3s ease, width 0.3s ease;
+    box-sizing: border-box;
+}
+
+/* Khi checkbox sidebar được checked - Thêm vào để đảm bảo responsive khi sidebar mở */
+#open:checked ~ .content,
+body.has-sidebar-open .content,
+.sidebar-open {
+    margin-left: 240px !important;
+    width: calc(100% - 240px) !important;
+}
+
+/* Đảm bảo header cũng được di chuyển khi menu mở */
+#open:checked ~ header,
+body.has-sidebar-open header {
+    position: fixed;
+    width: calc(100% - 240px);
+    left: 240px;
+}
+
+.header-row {
+    display: flex;
+    margin: 0 auto;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    width: 90%;
+}
+
+.header-row h2 {
+    margin: 0;
+    font-size: 22px;
+    color: black;
+    font-weight: 600;
+}
+
+/* Thống kê tổng quan - làm nhỏ hơn */
+.stats-overview {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 15px;
+    width: 90%;
+    margin: 0 auto;
+}
+
+.stats-card {
+    position: relative;
+    background: var(--white, #fff);
+    padding: 12px;
+    border-radius: 10px;
+    display: flex;
+    justify-content: space-between;
+    cursor: pointer;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+}
+
+.stats-card:hover {
+    background: var(--blue, #3399FF);
+}
+
+.stats-card:hover .stats-info h3,
+.stats-card:hover .stats-info .stats-count,
+.stats-card:hover .stats-icon {
+    color: var(--white, #fff);
+}
+
+.stats-icon {
+    font-size: 1.8em;
+    color: var(--blue, #3399FF);
+}
+
+.stats-info h3 {
+    margin: 0;
+    font-size: 0.85em;
+    font-weight: 500;
+    color: var(--black2, #999);
+}
+
+.stats-count {
+    margin: 2px 0 0;
+    font-size: 1.5em;
+    font-weight: 600;
+    color: var(--blue, #3399FF);
+}
+
+/* Tabs system */
+.tabs-container {
+    margin:0 auto;
+    width: 90%;
+    margin-bottom: 15px;
+}
+
+.tabs-header {
+    display: flex;
+    background: #f1f1f1;
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 10px;
+}
+
+.tab-button {
+    flex: 1;
+    padding: 10px 15px;
+    text-align: center;
+    cursor: pointer;
+    background: transparent;
+    border: none;
+    font-size: 14px;
+    font-weight: 500;
+    color: #555;
+    transition: all 0.3s ease;
+}
+
+.tab-button.active {
+    background: var(--blue, #3399FF);
+    color: white;
+}
+
+.tab-button:hover:not(.active) {
+    background: #e0e0e0;
+}
+
+.tab-content {
+    display: none;
+    width: 100%;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+/* Card layout - làm nhỏ hơn */
+.cardBox {
+    position: relative;
+    width: 100%;
+    padding: 10px;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    grid-gap: 15px;
+}
+
+.cardBox .card {
+    position: relative;
+    background: var(--white, #fff);
+    padding: 12px;
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+}
+
+.cardHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.cardHeader h2 {
+    font-weight: 600;
+    color: var(--blue, #3399FF);
+    font-size: 1em;
+    margin: 0;
+}
+
+.btn {
+    position: relative;
+    padding: 4px 8px;
+    background: var(--blue, #3399FF);
+    text-decoration: none;
+    color: var(--white, #fff);
+    border-radius: 4px;
+    font-size: 12px;
+    border: none;
+    cursor: pointer;
+}
+
+/* Biểu đồ */
+.chart-body {
+    position: relative;
+    width: 100%;
+    height: 220px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.chart-filter select {
+    padding: 3px 6px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 12px;
+    background-color: #f8f9fa;
+}
+
+/* Recent Orders - Bảng học phần */
+.recentOrders {
+    position: relative;
+    width: 100%;
+    padding: 12px;
+    background: var(--white, #fff);
+    border-radius: 10px;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+    margin-bottom: 15px;
+}
+
+.recentOrders table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 8px;
+    text-align: center;
+    font-size: 13px;
+}
+
+.recentOrders table thead td,
+.recentOrders table thead th {
+    font-weight: 600;
+    font-size: 13px;
+}
+
+.recentOrders table tr {
+    color: var(--black1, #222);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.recentOrders table tbody tr:hover {
+    background: var(--blue, #3399FF);
+    color: var(--white, #fff);
+}
+
+.recentOrders table tr td,
+.recentOrders table tr th {
+    padding: 6px;
+    text-align: center;
+}
+
+/* Device list */
+.device-list {
+    position: relative;
+    max-height: 250px;
+    overflow-y: auto;
+}
+
+.device-item {
+    display: flex;
+    align-items: center;
+    padding: 8px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.device-item:last-child {
+    border-bottom: none;
+}
+
+.device-icon {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 10px;
+    color: var(--white, #fff);
+    background: var(--blue, #3399FF);
+    font-size: 12px;
+}
+
+.device-info {
+    flex: 1;
+}
+
+.device-info h4 {
+    margin: 0 0 2px;
+    color: var(--black1, #222);
+    font-size: 13px;
+}
+
+.device-info p {
+    margin: 0;
+    color: var(--black2, #999);
+    font-size: 11px;
+}
+
+.device-status {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-left: 8px;
+}
+
+.status-online {
+    background-color: #34a853;
+}
+
+.status-offline {
+    background-color: #ea4335;
+}
+
+/* Activity list */
+.activity-list-container {
+    position: relative;
+    max-height: 250px;
+    overflow-y: auto;
+}
+
+.activity-item {
+    display: flex;
+    padding: 8px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.activity-item:last-child {
+    border-bottom: none;
+}
+
+.activity-icon {
+    width: 25px;
+    height: 25px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 8px;
+    color: var(--white, #fff);
+    font-size: 11px;
+}
+
+.icon-attendance {
+    background-color: var(--blue, #3399FF);
+}
+
+.icon-class {
+    background-color: #34a853;
+}
+
+.icon-device {
+    background-color: #fbbc05;
+}
+
+.activity-content {
+    flex: 1;
+}
+
+.activity-content p {
+    margin: 0 0 2px;
+    color: var(--black1, #222);
+    font-size: 12px;
+}
+
+.activity-time {
+    color: var(--black2, #999);
+    font-size: 10px;
+}
+
+/* Loading indicator */
+.loading {
+    text-align: center;
+    padding: 12px;
+    color: var(--black2, #999);
+    font-size: 12px;
+}
+
+/* Responsive design */
+@media (max-width: 991px) {
+    .stats-overview {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .cardBox {
+        grid-template-columns: 1fr;
+        padding: 8px;
+    }
+    
+    .cardBox .card {
+        margin-bottom: 8px;
+    }
+    
+    #open:checked ~ .content,
+    body.has-sidebar-open .content {
+        margin-left: 0;
+        width: 100%;
+    }
+}
+
+@media (max-width: 768px) {
+    .stats-overview {
+        grid-template-columns: 1fr;
+    }
+    
+    .content {
+        padding: 10px;
+        margin-top: 60px;
+    }
+    
+    .header-row {
+        flex-direction: column;
+        align-items: flex-start;
+        margin-bottom: 10px;
+    }
+    
+    .tabs-header {
+        flex-wrap: wrap;
+    }
+    
+    .tab-button {
+        flex: 1 0 50%;
+    }
+    
+    .recentOrders table {
+        font-size: 11px;
+    }
+    
+    .chart-body {
+        height: 180px;
+    }
+}
+
+@media (max-width: 480px) {
+    .cardHeader {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .cardHeader .btn {
+        margin-top: 6px;
+    }
+    
+    .stats-card {
+        padding: 10px;
+    }
+    
+    .stats-count {
+        font-size: 1.3em;
+    }
+    
+    .device-icon,
+    .activity-icon {
+        min-width: 20px;
+    }
+    
+    .tab-button {
+        flex: 1 0 100%;
+        padding: 8px;
+    }
+}

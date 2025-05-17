@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard | Hệ thống điểm danh</title>
+    <link rel="stylesheet" href="https://pro.fontawesome.com/releases/v5.10.0/css/all.css"
+        integrity="sha384-AYmEC3Yw5cVb3ZcuHtOA93w35dYTsvhLPVnYs9eStHfGJvOvKxVfELGroGkvsg+p" crossorigin="anonymous" />
+    <link rel="stylesheet" href="/css/Dashboardstyle.css">
+    <link rel="stylesheet" href="/css/dashboard-home.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"
+        integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+</head>
+
+<body>
+    <%- include('../layouts/header') %>
+    
+    <div class="content">
+        <div class="header-row">
+            <h2>Dashboard</h2>
+        </div>
+
+        <!-- Thống kê tổng quan -->
+        <div class="stats-overview">
+            <div class="stats-card total-students">
+                <div class="stats-icon">
+                    <i class="fas fa-user-graduate"></i>
+                </div>
+                <div class="stats-info">
+                    <h3>Sinh viên</h3>
+                    <p class="stats-count" id="studentCount">0</p>
+                </div>
+            </div>
+
+            <div class="stats-card total-classes">
+                <div class="stats-icon">
+                    <i class="fas fa-chalkboard-teacher"></i>
+                </div>
+                <div class="stats-info">
+                    <h3>Học phần</h3>
+                    <p class="stats-count" id="classSessionCount">0</p>
+                </div>
+            </div>
+
+            <div class="stats-card total-teachers">
+                <div class="stats-icon">
+                    <i class="fas fa-user-tie"></i>
+                </div>
+                <div class="stats-info">
+                    <h3>Giảng viên</h3>
+                    <p class="stats-count" id="teacherCount">0</p>
+                </div>
+            </div>
+
+            <div class="stats-card total-devices">
+                <div class="stats-icon">
+                    <i class="fas fa-microchip"></i>
+                </div>
+                <div class="stats-info">
+                    <h3>Thiết bị</h3>
+                    <p class="stats-count" id="deviceCount">0</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab System -->
+        <div class="tabs-container">
+            <div class="tabs-header">
+                <button class="tab-button active" data-tab="attendance">Điểm danh</button>
+                <button class="tab-button" data-tab="classes">Học phần</button>
+                <button class="tab-button" data-tab="devices">Thiết bị</button>
+                <button class="tab-button" data-tab="activities">Hoạt động</button>
+            </div>
+            
+            <!-- Tab: Điểm danh -->
+            <div class="tab-content active" id="tab-attendance">
+                <div class="cardBox">
+                    <div class="card">
+                        <div class="cardHeader">
+                            <h2>Thống kê điểm danh</h2>
+                            <div class="chart-filter">
+                                <select id="attendanceChartFilter">
+                                    <option value="week">7 ngày qua</option>
+                                    <option value="month">30 ngày qua</option>
+                                    <option value="semester">Học kỳ hiện tại</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="chart-body">
+                            <canvas id="attendanceChart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="cardHeader">
+                            <h2>Phân bố học phần</h2>
+                        </div>
+                        <div class="chart-body">
+                            <canvas id="classTypeChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Tab: Học phần -->
+            <div class="tab-content" id="tab-classes">
+                <div class="recentOrders">
+                    <div class="cardHeader">
+                        <h2>Học phần đang diễn ra</h2>
+                        <a href="/admin/classsessions" class="btn">Xem tất cả</a>
+                    </div>
+
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Mã lớp</th>
+                                <th>Tên học phần</th>
+                                <th>Giảng viên</th>
+                                <th>Trạng thái</th>
+                            </tr>
+                        </thead>
+                        <tbody id="currentClassSessions">
+                            <tr>
+                                <td colspan="4" class="loading">Đang tải dữ liệu...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Tab: Thiết bị -->
+            <div class="tab-content" id="tab-devices">
+                <div class="card">
+                    <div class="cardHeader">
+                        <h2>Trạng thái thiết bị</h2>
+                        <a href="/admin/devices" class="btn">Quản lý</a>
+                    </div>
+                    <div class="device-list" id="recentDevices">
+                        <div class="loading">Đang tải dữ liệu...</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Tab: Hoạt động -->
+            <div class="tab-content" id="tab-activities">
+                <div class="card">
+                    <div class="cardHeader">
+                        <h2>Hoạt động gần đây</h2>
+                    </div>
+                    <div class="activity-list-container" id="recentActivities">
+                        <div class="loading">Đang tải dữ liệu...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/adminJs/dashboardManagementModal.js"></script>
+    <script>
+        // Tab system script
+        document.addEventListener('DOMContentLoaded', function() {
+            const tabButtons = document.querySelectorAll('.tab-button');
+            const tabContents = document.querySelectorAll('.tab-content');
+            
+            tabButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const tabId = this.getAttribute('data-tab');
+                    
+                    // Remove active class from all buttons and contents
+                    tabButtons.forEach(btn => btn.classList.remove('active'));
+                    tabContents.forEach(content => content.classList.remove('active'));
+                    
+                    // Add active class to current button and content
+                    this.classList.add('active');
+                    document.getElementById('tab-' + tabId).classList.add('active');
+                });
+            });
+        });
+    </script>
+</body>
+
+</html>

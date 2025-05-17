@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý Học kỳ</title>
+    <link rel="stylesheet" href="https://pro.fontawesome.com/releases/v5.10.0/css/all.css"
+        integrity="sha384-AYmEC3Yw5cVb3ZcuHtOA93w35dYTsvhLPVnYs9eStHfGJvOvKxVfELGroGkvsg+p" crossorigin="anonymous" />
+    <link rel="stylesheet" href="/css/Dashboardstyle.css">
+    <link rel="stylesheet" href="/css/semesterManagementStyle.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"
+        integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/vn.js"></script>
+</head>
+
+<body>
+    <%- include('../layouts/header') %>
+        <div class="content">
+            <div class="header-row">
+                <h2>Quản lý Học kỳ</h2>
+                <div class="search-add-container">
+                    <div class="search-container">
+                        <form action="/admin/semesterManagement" method="GET">
+                            <input type="text" name="search" placeholder="Tìm học kỳ..." value="<%= searchTerm %>" />
+                            <button type="submit"><i class="fas fa-search"></i></button>
+                        </form>
+                    </div>
+                    <button class="add-semester-btn" id="openAddModal">
+                        <i class="fas fa-plus"></i> Thêm học kỳ
+                    </button>
+                </div>
+            </div>
+
+            <% if (searchResults) { %>
+                <div class="search-results-info">
+                    <% if (semesters.length> 0) { %>
+                        <% } else { %>
+                            <p>Không tìm thấy kết quả nào cho "<%= searchTerm %>"</p>
+                            <% } %>
+                                <a href="/admin/semesterManagement" class="clear-search">Xóa tìm kiếm</a>
+                </div>
+                <% } %>
+
+                    <div class="table-responsive">
+                        <table class="semester-table">
+                            <thead>
+                                <tr>
+                                    <th>STT</th>
+                                    <th>Tên học kỳ</th>
+                                    <th>Thời gian bắt đầu</th>
+                                    <th>Thời gian kết thúc</th>
+                                    <th>Trạng thái</th>
+                                    <th>Hành động</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% if (semesters.length> 0) { %>
+                                    <% semesters.forEach((semester, index)=> { %>
+                                        <tr>
+                                            <td>
+                                                <%= (pagination.page - 1) * pagination.limit + index + 1 %>
+                                            </td>
+                                            <td>
+                                                <%= semester.name %>
+                                            </td>
+                                            <td>
+                                                <%= semester.start_time_formatted %>
+                                            </td>
+                                            <td>
+                                                <%= semester.end_time_formatted %>
+                                            </td>
+                                            <td>
+                                                <% if (semester.status==='active' ) { %>
+                                                    <span class="status active">Đang diễn ra</span>
+                                                    <% } else if (semester.status==='upcoming' ) { %>
+                                                        <span class="status upcoming">Sắp tới</span>
+                                                        <% } else { %>
+                                                            <span class="status past">Đã kết thúc</span>
+                                                            <% } %>
+                                            </td>
+                                            <td class="action-btns">
+                                                <i class="fas fa-eye view-semester-btn" data-id="<%= semester.id %>"
+                                                    title="Xem chi tiết"></i>
+                                                <i class="fas fa-edit edit-semester-btn" data-id="<%= semester.id %>"
+                                                    title="Chỉnh sửa"></i>
+                                                <i class="fas fa-trash delete-semester-btn" data-id="<%= semester.id %>"
+                                                    title="Xóa"></i>
+                                            </td>
+                                        </tr>
+                                        <% }); %>
+                                            <% } else { %>
+                                                <tr>
+                                                    <td colspan="6" class="no-results">Không có học kỳ nào</td>
+                                                </tr>
+                                                <% } %>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Phân trang -->
+                    <% if (semesters.length> 0) { %>
+                        <div class="pagination-container">
+                            <div class="pagination" id="pagination-container" data-current-page="<%= pagination.page %>"
+                                data-total-pages="<%= pagination.totalPages %>" data-search-term="<%= searchTerm %>">
+                                <!-- Nút trang đầu và trang trước -->
+                                <% if (pagination.page> 1) { %>
+                                    <a href="?page=1<%= searchTerm ? '&search=' + searchTerm : '' %>"
+                                        class="pagination-link first-page">
+                                        <i class="fas fa-angle-double-left"></i>
+                                    </a>
+                                    <a href="?page=<%= pagination.page - 1 %><%= searchTerm ? '&search=' + searchTerm : '' %>"
+                                        class="pagination-link prev-page">
+                                        <i class="fas fa-angle-left"></i>
+                                    </a>
+                                    <% } else { %>
+                                        <span class="pagination-link disabled first-page"><i
+                                                class="fas fa-angle-double-left"></i></span>
+                                        <span class="pagination-link disabled prev-page"><i
+                                                class="fas fa-angle-left"></i></span>
+                                        <% } %>
+
+                                            <!-- Đoạn số trang sẽ được tạo bằng JavaScript -->
+                                            <span id="page-numbers"></span>
+
+                                            <!-- Nút trang sau và trang cuối -->
+                                            <% if (pagination.page < pagination.totalPages) { %>
+                                                <a href="?page=<%= pagination.page + 1 %><%= searchTerm ? '&search=' + searchTerm : '' %>"
+                                                    class="pagination-link next-page">
+                                                    <i class="fas fa-angle-right"></i>
+                                                </a>
+                                                <a href="?page=<%= pagination.totalPages %><%= searchTerm ? '&search=' + searchTerm : '' %>"
+                                                    class="pagination-link last-page">
+                                                    <i class="fas fa-angle-double-right"></i>
+                                                </a>
+                                                <% } else { %>
+                                                    <span class="pagination-link disabled next-page"><i
+                                                            class="fas fa-angle-right"></i></span>
+                                                    <span class="pagination-link disabled last-page"><i
+                                                            class="fas fa-angle-double-right"></i></span>
+                                                    <% } %>
+                            </div>
+                        </div>
+                        <% } %>
+
+                            <!-- View Semester Modal -->
+                            <div id="viewSemesterModal" class="modal">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h2>Chi tiết học kỳ</h2>
+                                        <span class="close-view-btn">&times;</span>
+                                    </div>
+                                    <div class="modal-body">
+                                        <div class="semester-info-container">
+                                            <div class="info-row">
+                                                <div class="info-label">Tên học kỳ:</div>
+                                                <div class="info-value" id="viewSemesterName"></div>
+                                            </div>
+                                            <div class="info-row">
+                                                <div class="info-label">Thời gian bắt đầu:</div>
+                                                <div class="info-value" id="viewStartTime"></div>
+                                            </div>
+                                            <div class="info-row">
+                                                <div class="info-label">Thời gian kết thúc:</div>
+                                                <div class="info-value" id="viewEndTime"></div>
+                                            </div>
+                                            <div class="info-row">
+                                                <div class="info-label">Trạng thái:</div>
+                                                <div class="info-value">
+                                                    <span id="viewSemesterStatus" class="status"></span>
+                                                </div>
+                                            </div>
+                                            <div class="info-row">
+                                                <div class="info-label">Số buổi học:</div>
+                                                <div class="info-value" id="viewClassSessionCount"></div>
+                                            </div>
+                                        </div>
+                                        <div id="classSessionsContainer">
+                                            <h3>Danh sách buổi học</h3>
+                                            <div id="classSessionList" class="class-session-list"></div>
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button class="btn btn-secondary close-view-btn">Đóng</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Edit Semester Modal -->
+                            <div id="editSemesterModal" class="modal">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h2>Chỉnh sửa học kỳ</h2>
+                                        <span class="close-edit-btn">&times;</span>
+                                    </div>
+                                    <div class="modal-body">
+                                        <form id="editSemesterForm">
+                                            <input type="hidden" id="editId">
+                                            <div class="form-group">
+                                                <label for="editName">Tên học kỳ:</label>
+                                                <input type="text" id="editName" name="name" required>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="editStartTime">Thời gian bắt đầu:</label>
+                                                <input type="date" id="editStartTime" name="start_time" required>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="editEndTime">Thời gian kết thúc:</label>
+                                                <input type="date" id="editEndTime" name="end_time" required>
+                                            </div>
+                                            <div class="form-actions">
+                                                <button type="submit" class="btn btn-save">Lưu thay đổi</button>
+                                                <button type="button" class="btn btn-cancel close-edit-btn">Hủy</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Add Semester Modal -->
+                            <div id="addSemesterModal" class="modal">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h2>Thêm học kỳ mới</h2>
+                                        <span class="close-add-btn">&times;</span>
+                                    </div>
+                                    <div class="modal-body">
+                                        <form id="addSemesterForm">
+                                            <div class="form-group">
+                                                <label for="addName">Tên học kỳ:</label>
+                                                <input type="text" id="addName" name="name"
+                                                    placeholder="Nhập tên học kỳ" required>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="addStartTime">Thời gian bắt đầu:</label>
+                                                <input type="date" id="addStartTime" name="start_time" required>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="addEndTime">Thời gian kết thúc:</label>
+                                                <input type="date" id="addEndTime" name="end_time" required>
+                                            </div>
+                                            <div class="form-actions">
+                                                <button type="submit" class="btn btn-save">Thêm học kỳ</button>
+                                                <button type="button" class="btn btn-cancel close-add-btn">Hủy</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Delete Confirmation Modal -->
+                            <div id="deleteConfirmModal" class="modal">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h2>Xác nhận xóa</h2>
+                                        <span class="close-delete-btn">&times;</span>
+                                    </div>
+                                    <div class="modal-body">
+                                        <p class="warning-text">Bạn có chắc chắn muốn xóa học kỳ này?</p>
+                                        <div id="deleteSemesterInfo"></div>
+                                        <div id="deleteWarningMessage" style="display: none;"></div>
+                                        <div class="form-actions">
+                                            <button id="confirmDeleteBtn" class="btn btn-danger">Xóa</button>
+                                            <button class="btn btn-cancel close-delete-btn">Hủy</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Notification Modal -->
+                            <div id="notificationModal" class="notification-modal">
+                                <div class="notification-content">
+                                    <div class="notification-icon">
+                                        <i class="fas fa-check-circle"></i>
+                                    </div>
+                                    <div class="notification-text">
+                                        <p id="notificationMessage"></p>
+                                    </div>
+                                </div>
+                            </div>
+        </div>
+
+        <script src="/js/adminJs/semesterManagementModal.js"></script>
+        <script src="/js/adminJs/pagination.js"></script>
+        <script src="/js/adminJs/sidebarEffect.js"></script>
+</body>
+
+</html>

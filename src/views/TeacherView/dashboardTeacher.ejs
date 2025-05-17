@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard | Giáo Viên</title>
+    <link rel="stylesheet" href="https://pro.fontawesome.com/releases/v5.10.0/css/all.css"
+        integrity="sha384-AYmEC3Yw5cVb3ZcuHtOA93w35dYTsvhLPVnYs9eStHfGJvOvKxVfELGroGkvsg+p" crossorigin="anonymous" />
+    <link rel="stylesheet" href="/css/dashboardStyle.css">
+    <link rel="stylesheet" href="/css/dashboard-home.css">
+    <link rel="stylesheet" href="/css/teacherStyle.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"
+        integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+    <meta name="current-user-id" content="<%= user.id %>">
+</head>
+
+<body>
+    <%- include('../layouts/headerTeacher') %>
+    
+    <div class="content">
+        <div class="header-row">
+            <h2>Dashboard</h2>
+        </div>
+
+        <!-- Thống kê tổng quan -->
+        <div class="stats-overview">
+            <div class="stats-card total-classes">
+                <div class="stats-icon">
+                    <i class="fas fa-chalkboard-teacher"></i>
+                </div>
+                <div class="stats-info">
+                    <h3>Lớp đang dạy</h3>
+                    <p class="stats-count" id="classesCount">0</p>
+                </div>
+            </div>
+
+            <div class="stats-card total-sessions">
+                <div class="stats-icon">
+                    <i class="fas fa-calendar-check"></i>
+                </div>
+                <div class="stats-info">
+                    <h3>Buổi học đã dạy</h3>
+                    <p class="stats-count"><span id="sessionsTaught">0</span>/<span id="totalSessions">0</span></p>
+                </div>
+            </div>
+
+            <div class="stats-card total-attendance">
+                <div class="stats-icon">
+                    <i class="fas fa-user-check"></i>
+                </div>
+                <div class="stats-info">
+                    <h3>Tỷ lệ chuyên cần</h3>
+                    <p class="stats-count" id="attendanceRate">0%</p>
+                </div>
+            </div>
+
+            <div class="stats-card total-today">
+                <div class="stats-icon">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div class="stats-info">
+                    <h3>Buổi học hôm nay</h3>
+                    <p class="stats-count" id="todayCount">0</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab System -->
+        <div class="tabs-container">
+            <div class="tabs-header">
+                <button class="tab-button active" data-tab="schedule">Lịch dạy</button>
+                <button class="tab-button" data-tab="classes">Lớp học phần</button>
+                <button class="tab-button" data-tab="notifications">Thông báo</button>
+                <button class="tab-button" data-tab="attendance">Chuyên cần</button>
+            </div>
+            
+            <!-- Tab: Lịch dạy -->
+            <div class="tab-content active" id="tab-schedule">
+                <div class="cardBox">
+                    <div class="card">
+                        <div class="cardHeader">
+                            <h2>Lịch dạy hôm nay</h2>
+                            <a href="/teacher/schedule" class="btn">Xem tất cả</a>
+                        </div>
+                        <table class="schedule-table">
+                            <thead>
+                                <tr>
+                                    <th>Tên lớp học phần</th>
+                                    <th>Thời gian</th>
+                                    <th>Phòng học</th>
+                                    <th>Trạng thái</th>
+                                    <th>Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody id="todayScheduleList">
+                                <tr>
+                                    <td colspan="5" class="loading">Đang tải dữ liệu...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="cardHeader">
+                            <h2>Lịch dạy sắp tới</h2>
+                        </div>
+                        <div class="upcoming-schedules-list" id="upcomingScheduleList">
+                            <div class="loading">Đang tải lịch dạy sắp tới...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Tab: Lớp học phần -->
+            <div class="tab-content" id="tab-classes">
+                <div class="recentOrders">
+                    <div class="cardHeader">
+                        <h2>Lớp học phần đang giảng dạy</h2>
+                    </div>
+
+                    <div class="classes-list" id="classesList">
+                        <div class="loading">Đang tải danh sách lớp học...</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Tab: Thông báo -->
+            <div class="tab-content" id="tab-notifications">
+                <div class="card">
+                    <div class="cardHeader">
+                        <h2>Thông báo nhắc nhở</h2>
+                    </div>
+                    <div class="activity-list-container">
+                        <ul class="notification-list" id="notificationList">
+                            <li class="loading">Đang tải thông báo...</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Tab: Chuyên cần -->
+            <div class="tab-content" id="tab-attendance">
+                <div class="card">
+                    <div class="cardHeader">
+                        <h2>Tình hình chuyên cần</h2>
+                    </div>
+                    <div class="attendance-issues-container">
+                        <ul class="attendance-issues-list" id="attendanceIssuesList">
+                            <li class="loading">Đang tải dữ liệu chuyên cần...</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal điểm danh -->
+    <div id="attendanceModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Bắt đầu điểm danh</h2>
+                <span class="close-modal">&times;</span>
+            </div>
+            <div class="modal-body">
+                <p>Lớp học phần: <span id="attendanceClassName"></span></p>
+                
+                <div class="form-group">
+                    <label for="attendanceMethod">Phương thức điểm danh:</label>
+                    <select id="attendanceMethod" class="form-control">
+                        <option value="rfid">Thẻ RFID</option>
+                        <option value="qr">Quét mã QR</option>
+                        <option value="manual">Điểm danh thủ công</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="attendanceTime">Thời gian điểm danh (phút):</label>
+                    <select id="attendanceTime" class="form-control">
+                        <option value="5">5 phút</option>
+                        <option value="10" selected>10 phút</option>
+                        <option value="15">15 phút</option>
+                        <option value="20">20 phút</option>
+                        <option value="30">30 phút</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary close-modal">Hủy</button>
+                <button type="button" class="btn btn-primary" id="startAttendanceBtn">Bắt đầu</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/teacherJs/dashboardModal.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const tabButtons = document.querySelectorAll('.tab-button');
+            const tabContents = document.querySelectorAll('.tab-content');
+            
+            tabButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const tabId = this.getAttribute('data-tab');
+                    
+                    // Remove active class from all buttons and contents
+                    tabButtons.forEach(btn => btn.classList.remove('active'));
+                    tabContents.forEach(content => content.classList.remove('active'));
+                    
+                    // Add active class to current button and content
+                    this.classList.add('active');
+                    document.getElementById('tab-' + tabId).classList.add('active');
+                });
+            });
+
+            // Xử lý sidebar toggle để đẩy nội dung ra
+            const openCheckbox = document.getElementById('open');
+            if (openCheckbox) {
+                // Khi checkbox thay đổi trạng thái
+                openCheckbox.addEventListener('change', function() {
+                    if (this.checked) {
+                        document.body.classList.add('has-sidebar-open');
+                    } else {
+                        document.body.classList.remove('has-sidebar-open');
+                    }
+                });
+                
+                // Kiểm tra trạng thái ban đầu của checkbox
+                if (openCheckbox.checked) {
+                    document.body.classList.add('has-sidebar-open');
+                }
+            }
+        });
+    </script>
+</body>
+
+</html>

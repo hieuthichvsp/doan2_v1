@@ -1,0 +1,54 @@
+<link href="//maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
+<script src="//maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+
+<script src="https://cdn.jsdelivr.net/jquery.validation/1.15.1/jquery.validate.min.js"></script>
+<link href="https://fonts.googleapis.com/css?family=Kaushan+Script" rel="stylesheet">
+<link href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet"
+    integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
+<link rel="stylesheet" href="/css/loginStyle.css">
+<script src="/js/authJs/logic_login.js"></script>
+
+<body>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-5 mx-auto">
+                <div id="first">
+                    <div class="myform form ">
+                        <div class="logo mb-3">
+                            <div class="col-md-12 text-center"
+                                style="display: flex;align-items: center; justify-content:center">
+                                <img src="/img/vlute_icon.png" alt="logo" class="logo_img" />
+                                <h1 style="display:inline-block">Đăng nhập</h1>
+                            </div>
+                        </div>
+                        <!-- Thêm id cho form và sửa method để khớp với logic xử lý -->
+                        <form id="loginForm" method="post">
+                            <!-- Hiển thị thông báo lỗi hoặc thành công -->
+                            <div id="login-alert" class="alert d-none"></div>
+
+                            <div class="form-group">
+                                <label for="username">Tài khoản:</label>
+                                <!-- Sử dụng type email và thêm pattern để chỉ chấp nhận gmail.com -->
+                                <input type="text" name="username" class="form-control" id="username"
+                                    placeholder="Nhập địa chỉ Gmail">
+                            </div>
+                            <div class="form-group">
+                                <label for="password">Mật khẩu:</label>
+                                <input type="password" name="password" id="password" class="form-control"
+                                    placeholder="Nhập mật khẩu">
+                            </div>
+                            <div class="form-group">
+                                <input type="checkbox" name="remember" id="remember" value="1">
+                                <p style="display:inline-block">Ghi nhớ đăng nhập</p>
+                            </div>
+                            <div class="col-md-12 text-center ">
+                                <button type="submit" class="btn btn-block mybtn btn-primary">Đăng nhập</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>

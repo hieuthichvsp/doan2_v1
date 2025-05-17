@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>
+        <%= title %> | Hệ thống điểm danh
+    </title>
+    <link rel="stylesheet" href="/css/teacherStyle.css">
+    <link rel="stylesheet" href="/css/dashboardStyle.css">
+    <link rel="stylesheet" href="/css/scheduleStyle.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <meta name="current-user-id" content="<%= user.id %>">
+    <style>
+        /* Đảm bảo CSS này ghi đè các quy tắc khác */
+        #open:checked~.content {
+            margin-left: 250px !important;
+            width: calc(100% - 250px) !important;
+        }
+
+        @media (max-width: 768px) {
+            #open:checked~.content {
+                margin-left: 0 !important;
+                width: 100% !important;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Wrap entire content in main-container -->
+    <div class="main-container">
+        <!-- Header -->
+        <%- include('../layouts/headerTeacher') %>
+
+            <!-- Overlay for mobile -->
+            <div class="overlay" id="sidebar-overlay"></div>
+
+            <!-- Content section -->
+            <div class="content">
+                <!-- Page Heading -->
+                <div class="header-row">
+                    <h2>Lịch dạy của giáo viên</h2>
+                </div>
+
+                <!-- Điều khiển lịch dạy -->
+                <div class="card">
+                    <div class="card-header">
+                        <h6 class="m-0 font-weight-bold text-white">Quản lý thời khóa biểu</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="schedule-controls">
+                            <div class="view-buttons">
+                                <button id="day-btn" class="view-btn active" data-view="day">Ngày</button>
+                                <button id="week-btn" class="view-btn" data-view="week">Tuần</button>
+                                <button id="month-btn" class="view-btn" data-view="month">Tháng</button>
+                            </div>
+                            <div class="date-navigation">
+                                <button id="prev-date"><i class="fas fa-chevron-left"></i></button>
+                                <span id="current-date">Đang tải...</span>
+                                <button id="next-date"><i class="fas fa-chevron-right"></i></button>
+                                <button id="today-btn">Hôm nay</button>
+                            </div>
+                            <!-- <div>
+                                <button id="filter-btn"><i class="fas fa-filter"></i> Bộ lọc</button>
+                            </div> -->
+                        </div>
+
+                        <!-- <div id="filter-results-info" class="filter-info" style="display: none;">
+                            <span id="filter-summary">Đang lọc theo: </span>
+                            <button id="clear-filter"><i class="fas fa-times"></i> Xóa bộ lọc</button>
+                        </div> -->
+
+                        <!-- View Ngày -->
+                        <div id="day-view" class="schedule-view active">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h6 class="m-0 font-weight-bold text-white" id="selected-day">Đang tải...</h6>
+                                </div>
+                                <div class="card-body p-0">
+                                    <div class="table-responsive">
+                                        <table class="table table-bordered">
+                                            <thead class="thead-light">
+                                                <tr>
+                                                    <th width="50" class="text-center">STT</th>
+                                                    <th width="120">Thời gian</th>
+                                                    <th>Lớp học phần</th>
+                                                    <th>Môn học</th>
+                                                    <th width="100">Phòng</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="day-schedule-events">
+                                                <tr>
+                                                    <td colspan="5" class="text-center">Đang tải dữ liệu...</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- View Tuần -->
+                        <div id="week-view" class="schedule-view">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h6 class="m-0 font-weight-bold text-white" id="week-range">Đang tải...</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="weekday-tabs">
+                                        <ul class="nav nav-pills">
+                                            <li class="nav-item">
+                                                <a class="nav-link active" data-day="all" href="#">Tất cả</a>
+                                            </li>
+                                            <li class="nav-item">
+                                                <a class="nav-link" data-day="Thứ Hai" href="#">T2</a>
+                                            </li>
+                                            <li class="nav-item">
+                                                <a class="nav-link" data-day="Thứ Ba" href="#">T3</a>
+                                            </li>
+                                            <li class="nav-item">
+                                                <a class="nav-link" data-day="Thứ Tư" href="#">T4</a>
+                                            </li>
+                                            <li class="nav-item">
+                                                <a class="nav-link" data-day="Thứ Năm" href="#">T5</a>
+                                            </li>
+                                            <li class="nav-item">
+                                                <a class="nav-link" data-day="Thứ Sáu" href="#">T6</a>
+                                            </li>
+                                            <li class="nav-item">
+                                                <a class="nav-link" data-day="Thứ Bảy" href="#">T7</a>
+                                            </li>
+                                            <li class="nav-item">
+                                                <a class="nav-link" data-day="Chủ Nhật" href="#">CN</a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                    <div class="table-responsive">
+                                        <table class="table table-bordered">
+                                            <thead class="thead-light">
+                                                <tr>
+                                                    <th width="50" class="text-center">STT</th>
+                                                    <th width="80">Thứ</th>
+                                                    <th width="100">Ngày</th>
+                                                    <th width="120">Thời gian</th>
+                                                    <th>Lớp học phần</th>
+                                                    <th>Môn học</th>
+                                                    <th width="100">Phòng</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="week-schedule-body">
+                                                <tr>
+                                                    <td colspan="7" class="text-center">Đang tải dữ liệu...</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- View Tháng -->
+                        <div id="month-view" class="schedule-view">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h6 class="m-0 font-weight-bold text-white" id="month-title">Đang tải...</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="calendar-container mb-4">
+                                        <div class="calendar-header">
+                                            <div class="row">
+                                                <div class="col">T2</div>
+                                                <div class="col">T3</div>
+                                                <div class="col">T4</div>
+                                                <div class="col">T5</div>
+                                                <div class="col">T6</div>
+                                                <div class="col">T7</div>
+                                                <div class="col">CN</div>
+                                            </div>
+                                        </div>
+                                        <div id="calendar-grid" class="calendar-grid">
+                                            <!-- Calendar will be generated by JS -->
+                                        </div>
+                                    </div>
+
+                                    <h6 class="mb-3 font-weight-bold text-primary">Danh sách buổi học trong tháng</h6>
+                                    <div class="table-responsive">
+                                        <table class="table table-bordered">
+                                            <thead class="thead-light">
+                                                <tr>
+                                                    <th width="50" class="text-center">STT</th>
+                                                    <th width="80">Thứ</th>
+                                                    <th width="100">Ngày</th>
+                                                    <th width="120">Thời gian</th>
+                                                    <th>Lớp học phần</th>
+                                                    <th>Môn học</th>
+                                                    <th width="100">Phòng</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="month-events-list">
+                                                <tr>
+                                                    <td colspan="7" class="text-center">Đang tải dữ liệu...</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal Bộ lọc -->
+            <div class="modal" id="filter-modal" tabindex="-1">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Bộ lọc lịch dạy</h5>
+                            <button type="button" class="close close-filter-modal">&times;</button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="form-group">
+                                <label for="filter-subject">Môn học</label>
+                                <select id="filter-subject" class="form-control">
+                                    <option value="">Tất cả môn học</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="filter-class-session">Lớp học phần</label>
+                                <select id="filter-class-session" class="form-control">
+                                    <option value="">Tất cả lớp học phần</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="filter-room">Phòng học</label>
+                                <select id="filter-room" class="form-control">
+                                    <option value="">Tất cả phòng học</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" id="apply-filter" class="btn btn-primary">Áp dụng</button>
+                            <button type="button" id="reset-filter" class="btn btn-secondary">Đặt lại</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal Chi tiết buổi học -->
+            <div class="modal" id="class-detail-modal" tabindex="-1">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Chi tiết buổi học</h5>
+                            <button type="button" class="close close-modal">&times;</button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="row mb-3">
+                                <div class="col-4 font-weight-bold">Lớp học phần:</div>
+                                <div class="col-8" id="detail-class-name"></div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-4 font-weight-bold">Môn học:</div>
+                                <div class="col-8" id="detail-subject"></div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-4 font-weight-bold">Thời gian:</div>
+                                <div class="col-8" id="detail-time"></div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-4 font-weight-bold">Ngày học:</div>
+                                <div class="col-8" id="detail-date"></div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-4 font-weight-bold">Phòng học:</div>
+                                <div class="col-8" id="detail-room"></div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary close-modal">Đóng</button>
+                            <button type="button" id="start-attendance-btn" class="btn btn-primary"><i
+                                    class="fas fa-clipboard-check"></i> Bắt đầu điểm danh</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Notification -->
+            <div id="notification-modal" class="notification-modal">
+                <div class="notification-content">
+                    <div class="notification-text">
+                        <span id="notification-message">Thông báo</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Scripts -->
+            <script src="/js/teacherJs/scheduleTeacherModal.js"></script>
+            <script>
+                // Script để xử lý overlay trên mobile
+                document.addEventListener('DOMContentLoaded', function () {
+                    const openCheckbox = document.getElementById('open');
+                    if (openCheckbox) {
+                        // Khi checkbox thay đổi trạng thái
+                        openCheckbox.addEventListener('change', function () {
+                            if (this.checked) {
+                                document.body.classList.add('has-sidebar-open');
+                            } else {
+                                document.body.classList.remove('has-sidebar-open');
+                            }
+                        });
+
+                        // Kiểm tra trạng thái ban đầu của checkbox
+                        if (openCheckbox.checked) {
+                            document.body.classList.add('has-sidebar-open');
+                        }
+                    }
+                });
+            </script>
+</body>
+
+</html>

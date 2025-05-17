@@ -1,0 +1,770 @@
+/* Reset CSS */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+}
+
+/* Biến CSS */
+:root {
+    --primary-color: #3399FF;
+    --secondary-color: #66b3ff;
+    --accent-color: #007bff;
+    --success-color: #34a853;
+    --danger-color: #ea4335;
+    --warning-color: #fbbc05;
+    --dark-color: #333;
+    --light-color: #f8f9fa;
+    --grey-color: #e0e0e0;
+    --text-color: #333;
+    --sidebar-bg: #212529;
+    --sidebar-text: #fff;
+    --sidebar-width: 250px;
+    --header-height: 60px;
+    --box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    --border-radius: 8px;
+}
+
+body {
+    min-height: 100vh;
+    overflow-x: hidden;
+    /* background-color: #f5f5f5; */
+    color: var(--text-color);
+    width: 90%;
+    margin: 0 auto;
+}
+.stats-overview{
+    width: 100%;
+}
+.header-row{
+    width: 100%;
+}
+.tabs-container{
+    width: 100%;
+}
+/* CSS cho việc di chuyển nội dung khi mở sidebar */
+#open:checked ~ .content,
+body.has-sidebar-open .content {
+    margin-left: var(--sidebar-width);
+    transition: all 0.3s ease;
+}
+
+/* Di chuyển header cùng với nội dung */
+#open:checked ~ header,
+body.has-sidebar-open header {
+    margin-left: var(--sidebar-width);
+    transition: all 0.3s ease;
+}
+
+/* Đảm bảo chuyển động mượt mà */
+.content, header {
+    transition: margin-left 0.3s ease;
+}
+
+/* Dashboard Container */
+.dashboard-container {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+    margin: 0 auto;
+    max-width: 100%;
+    padding: 20px;
+}
+
+.dashboard-container > section {
+    background: #fff;
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    overflow: hidden;
+}
+
+/* Sections */
+.section-header {
+    padding: 15px;
+    border-bottom: 1px solid var(--grey-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.section-header h2 {
+    font-size: 1.2rem;
+    color: var(--dark-color);
+    margin: 0;
+    display: flex;
+    align-items: center;
+}
+
+.section-header h2 i {
+    margin-right: 10px;
+    color: var(--primary-color);
+}
+
+.section-body {
+    padding: 15px;
+}
+
+/* Quick Stats */
+.quick-stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.stat-card {
+    flex: 1;
+    min-width: 140px;
+    padding: 15px;
+    border-radius: var(--border-radius);
+    background: #fff;
+    box-shadow: var(--box-shadow);
+    text-align: center;
+}
+
+.stat-card .stat-value {
+    font-size: 1.8rem;
+    font-weight: bold;
+    margin-bottom: 5px;
+    color: var(--primary-color);
+}
+
+.stat-card .stat-label {
+    font-size: 0.9rem;
+    color: #777;
+}
+
+/* Today Schedules */
+.today-schedule {
+    grid-column: span 2;
+}
+
+.schedule-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.schedule-table th, .schedule-table td {
+    padding: 10px;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+}
+
+.schedule-table th {
+    background-color: #f9f9f9;
+    font-weight: 500;
+}
+
+.schedule-table tr:last-child td {
+    border-bottom: none;
+}
+
+.status-completed {
+    color: #34a853;
+    font-weight: 500;
+}
+
+.status-pending {
+    color: #fbbc05;
+    font-weight: 500;
+}
+
+.status-in-progress {
+    color: #4285f4;
+    font-weight: 500;
+}
+
+/* Notifications */
+.notifications {
+    grid-column: 1;
+    grid-row: 2;
+}
+
+.notification-list {
+    list-style: none;
+}
+
+.notification-item {
+    padding: 15px;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    align-items: flex-start;
+}
+
+.notification-item:last-child {
+    border-bottom: none;
+}
+
+.notification-item i {
+    margin-right: 15px;
+    font-size: 1.2em;
+    color: var(--accent-color);
+    margin-top: 3px;
+}
+
+.notification-item.warning i {
+    color: var(--warning-color);
+}
+
+.notification-item.attendance i {
+    color: var(--primary-color);
+}
+
+.notification-content {
+    flex: 1;
+}
+
+.notification-content p {
+    margin: 0 0 5px 0;
+    line-height: 1.4;
+}
+
+.notification-content small {
+    color: #888;
+    font-size: 0.8em;
+}
+
+/* Classes */
+.teaching-classes {
+    grid-column: 2;
+    grid-row: 2;
+}
+
+.classes-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 15px;
+    padding: 10px;
+}
+
+.class-card {
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    border: 1px solid #eee;
+    transition: all 0.3s ease;
+}
+
+.class-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.class-info {
+    flex: 1;
+}
+
+.class-info h4 {
+    margin: 0 0 10px;
+    color: #333;
+    font-size: 16px;
+}
+
+.class-code {
+    color: #3399FF;
+    font-weight: 500;
+    margin-bottom: 8px;
+    display: block;
+}
+
+.class-schedule, .class-students {
+    color: #666;
+    margin: 5px 0;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+}
+
+.class-schedule i, .class-students i {
+    margin-right: 8px;
+    width: 16px;
+    color: #3399FF;
+}
+
+.class-actions {
+    margin-top: 15px;
+    display: flex;
+    justify-content: flex-end;
+}
+
+/* Attendance Issues */
+.attendance-issues {
+    grid-column: 1;
+    grid-row: 3;
+}
+
+.attendance-issues-list {
+    list-style: none;
+}
+
+.attendance-issue-item {
+    padding: 15px;
+    border-bottom: 1px solid #eee;
+}
+
+.attendance-issue-item:last-child {
+    border-bottom: none;
+}
+
+.issue-student-info {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 5px;
+}
+
+.student-name {
+    font-weight: 500;
+}
+
+.student-id {
+    color: #666;
+    font-size: 0.9em;
+}
+
+.issue-details {
+    font-size: 0.9em;
+}
+
+.class-name {
+    color: var(--accent-color);
+    margin-bottom: 5px;
+}
+
+.issue-stats {
+    display: flex;
+    justify-content: space-between;
+}
+
+.absent-count {
+    color: #666;
+}
+
+.absent-percentage {
+    font-weight: 500;
+}
+
+.high-severity .absent-percentage {
+    color: #ea4335;
+}
+
+.medium-severity .absent-percentage {
+    color: #fbbc05;
+}
+
+/* Upcoming Schedules */
+.upcoming-schedules {
+    grid-column: 2;
+    grid-row: 3;
+}
+
+.upcoming-schedules-list {
+    max-height: 300px;
+    overflow-y: auto;
+    padding: 5px;
+}
+
+.schedule-day {
+    margin-bottom: 20px;
+}
+
+.day-header {
+    padding: 5px 0;
+    margin-bottom: 8px;
+    color: #3399FF;
+    font-size: 14px;
+    border-bottom: 1px solid #eee;
+}
+
+.day-schedules {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.schedule-item {
+    display: flex;
+    padding: 10px;
+    border-left: 3px solid #3399FF;
+    background-color: #f9f9f9;
+    border-radius: 0 8px 8px 0;
+}
+
+.schedule-item.today-schedule {
+    background-color: #e8f4fd;
+    border-left-color: #4285f4;
+}
+
+.schedule-time {
+    min-width: 80px;
+    font-weight: 500;
+}
+
+.schedule-details {
+    margin-left:15px;
+}
+
+.schedule-details h4 {
+    margin: 0 0 5px;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.schedule-details p {
+    margin: 0;
+    font-size: 13px;
+    color: #666;
+}
+
+/* Tình hình chuyên cần */
+.attendance-issues-container {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.attendance-issues-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.issue-stats {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 5px;
+}
+
+.absent-count {
+    color: #666;
+}
+
+.absent-percentage {
+    font-weight: 500;
+}
+
+.high-severity .absent-percentage {
+    color: #ea4335;
+}
+
+.medium-severity .absent-percentage {
+    color: #fbbc05;
+}
+
+/* Thêm style cho activity-item */
+.activity-item {
+    display: flex;
+    padding: 12px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.activity-item:last-child {
+    border-bottom: none;
+}
+
+.activity-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 12px;
+    color: var(--white, #fff);
+    font-size: 14px;
+}
+
+.icon-attendance {
+    background-color: #3399FF;
+}
+
+.icon-class {
+    background-color: #34a853;
+}
+
+.icon-device {
+    background-color: #fbbc05;
+}
+
+.activity-content {
+    flex: 1;
+}
+
+.activity-content p {
+    margin: 0 0 3px;
+    color: #333;
+    font-size: 14px;
+}
+
+.activity-time {
+    color: #999;
+    font-size: 12px;
+}
+
+/* Modal style */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.6);
+}
+
+.modal-content {
+    background-color: #fff;
+    margin: 5% auto;
+    padding: 0;
+    border-radius: 8px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    width: 500px;
+    max-width: 90%;
+    animation: modalFadeIn 0.3s;
+}
+
+.modal-header {
+    padding: 15px 20px;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-header h2 {
+    margin: 0;
+    color: #333;
+    font-size: 18px;
+}
+
+.close-modal {
+    color: #aaa;
+    font-size: 24px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.close-modal:hover {
+    color: #333;
+}
+
+.modal-body {
+    padding: 20px;
+}
+
+.modal-footer {
+    padding: 15px 20px;
+    border-top: 1px solid #eee;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 500;
+}
+
+.form-control {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.btn {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.3s ease;
+}
+
+.btn-primary {
+    background-color: #3399FF;
+    color: white;
+}
+
+.btn-secondary {
+    background-color: #6c757d;
+    color: white;
+}
+
+.btn-view {
+    background-color: #4285f4;
+    color: white;
+}
+
+.btn:hover {
+    opacity: 0.9;
+}
+
+@keyframes modalFadeIn {
+    from {opacity: 0; transform: translateY(-30px);}
+    to {opacity: 1; transform: translateY(0);}
+}
+
+/* Status và messages */
+.loading {
+    text-align: center;
+    padding: 15px;
+    color: #999;
+}
+
+.no-data {
+    text-align: center;
+    padding: 15px;
+    color: #999;
+    font-style: italic;
+}
+
+.error-message {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 15px;
+    color: #ea4335;
+}
+
+.error-message i {
+    font-size: 24px;
+    margin-bottom: 8px;
+}
+
+
+/* Checkbox ẩn để điều khiển menu */
+#open {
+    display: none;
+}
+
+/* Khi checkbox được check, hiển thị menu */
+#open:checked ~ .menu {
+    transform: translateX(0);
+}
+
+/* Định vị cho nội dung ban đầu */
+.content {
+    margin-left: 0;
+    transition: margin-left 0.3s ease;
+    padding-top: var(--header-height);
+    height: 85%;
+}
+
+/* Header ban đầu full width */
+header {
+    position: fixed;
+    width: 100%;
+    top: 0;
+    right: 0;
+    left: 0;
+    z-index: 99;
+    transition: margin-left 0.3s ease;
+    background: white;
+    box-shadow: var(--box-shadow);
+}
+
+/* Khi sidebar mở, đẩy nội dung và header sang phải */
+#open:checked ~ .content,
+body.has-sidebar-open .content {
+    margin-left: var(--sidebar-width);
+}
+
+#open:checked ~ header,
+body.has-sidebar-open header {
+    margin-left: var(--sidebar-width);
+    width: calc(100% - var(--sidebar-width));
+}
+
+/* Menu toggle icon chuyển động */
+.open i {
+    transition: transform 0.3s ease;
+}
+
+#open:checked ~ .open i {
+    transform: rotate(90deg);
+}
+
+/* Nút menu */
+.open {
+    position: fixed;
+    left: 15px;
+    top: 15px;
+    z-index: 101;
+    cursor: pointer;
+    padding: 5px;
+    transition: all 0.3s ease;
+}
+
+/* #open:checked ~ .open {
+    left: calc(var(--sidebar-width) + 15px);
+} */
+
+/* Responsive */
+@media (max-width: 992px) {
+    .dashboard-container {
+        grid-template-columns: 1fr;
+    }
+    
+    .today-schedule,
+    .notifications,
+    .teaching-classes,
+    .attendance-issues,
+    .upcoming-schedules {
+        grid-column: 1;
+    }
+    
+    .notifications {
+        grid-row: 2;
+    }
+    
+    .teaching-classes {
+        grid-row: 3;
+    }
+    
+    .attendance-issues {
+        grid-row: 4;
+    }
+    
+    .upcoming-schedules {
+        grid-row: 5;
+    }
+    
+    .stats-overview {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .cardBox {
+        grid-template-columns: 1fr;
+    }
+    
+    .classes-list {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .stats-overview {
+        grid-template-columns: 1fr;
+    }
+    
+    .today-schedule {
+        grid-column: span 1;
+    }
+    
+    .schedule-table th:nth-child(3),
+    .schedule-table td:nth-child(3) {
+        display: none;
+    }
+    
+    .modal-content {
+        width: 95%;
+    }
+}
