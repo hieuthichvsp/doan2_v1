@@ -25,15 +25,15 @@
 }
 
 /* Khi checkbox sidebar được checked - Thêm vào để đảm bảo responsive khi sidebar mở */
-#open:checked ~ .content,
+#open:checked~.content,
 body.has-sidebar-open .content,
 .sidebar-open {
-    margin-left: 240px !important;
+    margin-left: 175px !important;
     width: calc(100% - 240px) !important;
 }
 
 /* Đảm bảo header cũng được di chuyển khi menu mở */
-#open:checked ~ header,
+#open:checked~header,
 body.has-sidebar-open header {
     position: fixed;
     width: calc(100% - 240px);
@@ -109,7 +109,7 @@ body.has-sidebar-open header {
 
 /* Tabs system */
 .tabs-container {
-    margin:0 auto;
+    margin: 0 auto;
     width: 90%;
     margin-bottom: 15px;
 }
@@ -389,17 +389,17 @@ body.has-sidebar-open header {
     .stats-overview {
         grid-template-columns: repeat(2, 1fr);
     }
-    
+
     .cardBox {
         grid-template-columns: 1fr;
         padding: 8px;
     }
-    
+
     .cardBox .card {
         margin-bottom: 8px;
     }
-    
-    #open:checked ~ .content,
+
+    #open:checked~.content,
     body.has-sidebar-open .content {
         margin-left: 0;
         width: 100%;
@@ -410,30 +410,30 @@ body.has-sidebar-open header {
     .stats-overview {
         grid-template-columns: 1fr;
     }
-    
+
     .content {
         padding: 10px;
         margin-top: 60px;
     }
-    
+
     .header-row {
         flex-direction: column;
         align-items: flex-start;
         margin-bottom: 10px;
     }
-    
+
     .tabs-header {
         flex-wrap: wrap;
     }
-    
+
     .tab-button {
         flex: 1 0 50%;
     }
-    
+
     .recentOrders table {
         font-size: 11px;
     }
-    
+
     .chart-body {
         height: 180px;
     }
@@ -444,24 +444,24 @@ body.has-sidebar-open header {
         flex-direction: column;
         align-items: flex-start;
     }
-    
+
     .cardHeader .btn {
         margin-top: 6px;
     }
-    
+
     .stats-card {
         padding: 10px;
     }
-    
+
     .stats-count {
         font-size: 1.3em;
     }
-    
+
     .device-icon,
     .activity-icon {
         min-width: 20px;
     }
-    
+
     .tab-button {
         flex: 1 0 100%;
         padding: 8px;

@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý lớp học phần | <%= title %>
+    </title>
+    <link rel="stylesheet" href="https://pro.fontawesome.com/releases/v5.10.0/css/all.css"
+        integrity="sha384-AYmEC3Yw5cVb3ZcuHtOA93w35dYTsvhLPVnYs9eStHfGJvOvKxVfELGroGkvsg+p" crossorigin="anonymous" />
+    <link rel="stylesheet" href="/css/teacherStyle.css">
+    <link rel="stylesheet" href="/css/classsessionTeacherStyle.css">
+    <link rel="stylesheet" href="/css/dashboardStyle.css">
+    <meta name="current-user-id" content="<%= user.id %>">
+</head>
+
+<body>
+    <%- include('../layouts/headerTeacher') %>
+        <div class="content">
+            <div class="header-row">
+                <h2>📚 Quản lý lớp học phần</h2>
+                <div class="utility-buttons">
+                    <button id="exportExcelBtn" class="btn-secondary">
+                        <i class="fas fa-file-excel"></i> Xuất Excel
+                    </button>
+                    <button id="refreshBtn" class="btn-secondary">
+                        <i class="fas fa-sync-alt"></i> Làm mới
+                    </button>
+                </div>
+            </div>
+
+            <!-- Search and Filter Section -->
+            <div class="filter-container">
+                <div class="search-box">
+                    <input type="text" id="searchInput" placeholder="Tìm kiếm lớp học phần...">
+                    <button id="searchBtn"><i class="fas fa-search"></i></button>
+                </div>
+
+                <div class="filter-options">
+                    <select id="filter-semester">
+                        <option value="">Tất cả học kỳ</option>
+                        <!-- Options will be filled by JavaScript -->
+                    </select>
+
+                    <select id="filter-subject">
+                        <option value="">Tất cả môn học</option>
+                        <!-- Options will be filled by JavaScript -->
+                    </select>
+
+                    <select id="filter-type">
+                        <option value="">Tất cả loại lớp</option>
+                        <option value="LT">Lý thuyết</option>
+                        <option value="TH">Thực hành</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Class Sessions Table -->
+            <div class="table-responsive">
+                <table id="classSessionTable" class="data-table">
+                    <thead>
+                        <tr>
+                            <th>STT</th>
+                            <th>Mã lớp</th>
+                            <th>Tên lớp</th>
+                            <th>Môn học</th>
+                            <th>Loại</th>
+                            <th>Số tín chỉ</th>
+                            <th>Số sinh viên</th>
+                            <th>Học kỳ</th>
+                            <th>Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody id="classSessionTableBody">
+                        <!-- Table content will be filled by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            <div class="pagination-container">
+                <div class="pagination-info">
+                    Hiển thị <span id="currentItems">0</span> / <span id="totalItems">0</span> lớp học phần
+                </div>
+                <div class="pagination" id="pagination">
+                    <!-- Pagination buttons will be added by JavaScript -->
+                </div>
+            </div>
+        </div>
+
+        <!-- View Class Session Modal -->
+        <div id="viewClassSessionModal" class="modal">
+            <div class="modal-content large-modal">
+                <div class="modal-header">
+                    <h3>Chi tiết lớp học phần</h3>
+                    <span class="close-modal">&times;</span>
+                </div>
+                <div class="modal-body">
+                    <div class="class-session-details">
+                        <div class="details-section">
+                            <h4>Thông tin chung</h4>
+                            <div class="details-grid">
+                                <div class="detail-item">
+                                    <span class="detail-label">Mã lớp:</span>
+                                    <span id="detail-class-code" class="detail-value">-</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">Tên lớp:</span>
+                                    <span id="detail-class-name" class="detail-value">-</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">Môn học:</span>
+                                    <span id="detail-subject" class="detail-value">-</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">Mã môn:</span>
+                                    <span id="detail-subject-code" class="detail-value">-</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">Loại lớp:</span>
+                                    <span id="detail-type" class="detail-value">-</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">Số tín chỉ:</span>
+                                    <span id="detail-credits" class="detail-value">-</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">Học kỳ:</span>
+                                    <span id="detail-semester" class="detail-value">-</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">Số sinh viên:</span>
+                                    <span id="detail-student-count" class="detail-value">-</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="details-section">
+                            <h4>Lịch học</h4>
+                            <div id="schedule-container">
+                                <table class="schedule-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Thứ</th>
+                                            <th>Tiết</th>
+                                            <th>Phòng</th>
+                                            <th>Thời gian</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="schedule-table-body">
+                                        <!-- Schedule content will be filled by JavaScript -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div class="details-section">
+                            <h4>Danh sách sinh viên</h4>
+                            <div class="student-list-controls">
+                                <div class="search-box">
+                                    <input type="text" id="studentSearchInput" placeholder="Tìm kiếm sinh viên...">
+                                    <button id="studentSearchBtn"><i class="fas fa-search"></i></button>
+                                </div>
+                                <button id="exportStudentListBtn" class="btn-secondary">
+                                    <i class="fas fa-file-excel"></i> Xuất danh sách
+                                </button>
+                            </div>
+
+                            <div class="table-responsive">
+                                <table class="data-table">
+                                    <thead>
+                                        <tr>
+                                            <th>STT</th>
+                                            <th>MSSV</th>
+                                            <th>Họ tên</th>
+                                            <th>Lớp</th>
+                                            <th>Ngày sinh</th>
+                                            <th>Email</th>
+                                            <th>Điểm danh</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="student-list-body">
+                                        <!-- Student list will be filled by JavaScript -->
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <div class="pagination-container">
+                                <div class="pagination-info">
+                                    Hiển thị <span id="currentStudents">0</span> / <span id="totalStudents">0</span>
+                                    sinh viên
+                                </div>
+                                <div class="pagination" id="studentPagination">
+                                    <!-- Pagination buttons will be added by JavaScript -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button id="exportReportBtn" class="btn-primary">
+                        <i class="fas fa-file-export"></i> Xuất báo cáo
+                    </button>
+                    <button id="viewAttendanceBtn" class="btn-primary">
+                        <i class="fas fa-clipboard-check"></i> Xem điểm danh
+                    </button>
+                    <button class="btn-secondary close-modal">Đóng</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Notification Modal -->
+        <div id="notificationModal" class="modal notification-modal">
+            <div class="modal-content small-modal">
+                <div class="modal-header">
+                    <h3 id="notification-title">Thông báo</h3>
+                    <span class="close-modal">&times;</span>
+                </div>
+                <div class="modal-body">
+                    <p id="notification-message"></p>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn-primary close-modal">Đồng ý</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Loading Overlay -->
+        <div id="loader" class="loader-overlay" style="display: none;">
+            <div class="loader"></div>
+        </div>
+
+        <!-- Scripts -->
+        <script src="/js/teacherJs/classsessionTeacherModal.js"></script>
+        <script>
+            // Script để xử lý overlay trên mobile
+            document.addEventListener('DOMContentLoaded', function () {
+                const openCheckbox = document.getElementById('open');
+                if (openCheckbox) {
+                    // Khi checkbox thay đổi trạng thái
+                    openCheckbox.addEventListener('change', function () {
+                        if (this.checked) {
+                            document.body.classList.add('has-sidebar-open');
+                        } else {
+                            document.body.classList.remove('has-sidebar-open');
+                        }
+                    });
+
+                    // Kiểm tra trạng thái ban đầu của checkbox
+                    if (openCheckbox.checked) {
+                        document.body.classList.add('has-sidebar-open');
+                    }
+                }
+            });
+        </script>
+</body>
+
+</html>

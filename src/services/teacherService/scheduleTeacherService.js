@@ -9,16 +9,60 @@ if (!model) {
 /**
  * Lấy lịch dạy của giáo viên theo ngày
  */
-const getSchedulesByDay = async (teacherId, date) => {
+const getSchedulesByDay = async (teacherId, date, semesterId) => {
     try {
-        // Chuyển đổi date thành weekday (0-6, 0 là Chủ nhật)
+        // Thêm log để debug
+        console.log(`Getting schedules for teacher ${teacherId} on ${date} in semester ${semesterId}`);
+
+        // Kiểm tra semesterId có tồn tại
+        if (!semesterId) {
+            return {
+                success: false,
+                message: 'Vui lòng chọn học kỳ'
+            };
+        }
+
+        // Lấy thông tin học kỳ
+        const semester = await model.Semester.findByPk(semesterId);
+        if (!semester) {
+            return {
+                success: false,
+                message: 'Học kỳ không tồn tại'
+            };
+        }
+
+        // Format thông tin học kỳ
+        const semesterInfo = {
+            id: semester.id,
+            name: semester.name,
+            startDate: semester.start_time,
+            endDate: semester.end_time
+        };
+
+        // Kiểm tra xem ngày có nằm trong học kỳ không
         const dateObj = new Date(date);
+        const semesterStart = new Date(semester.start_time);
+        const semesterEnd = new Date(semester.end_time);
+
+        if (dateObj < semesterStart || dateObj > semesterEnd) {
+            console.log(`Date ${date} is outside semester range ${semester.start_time} - ${semester.end_time}`);
+            return {
+                success: true,
+                schedules: [],
+                message: 'Ngày đã chọn không nằm trong học kỳ',
+                activeSemesters: [semesterInfo]
+            };
+        }
+
+        // Chuyển đổi date thành weekday (0-6, 0 là Chủ nhật)
         let weekday = dateObj.getDay();
 
         // Chuyển đổi weekday sang định dạng sử dụng trong DB (1-7, với 7 là Chủ nhật)
         weekday = weekday === 0 ? 7 : weekday;
 
-        // Lấy lịch học theo weekday
+        console.log(`Looking for schedules on weekday ${weekday}`);
+
+        // Lấy lịch học theo weekday và giới hạn trong học kỳ đã chọn
         const schedules = await model.Schedule.findAll({
             include: [
                 {
@@ -30,6 +74,10 @@ const getSchedulesByDay = async (teacherId, date) => {
                     model: model.ClassSession,
                     as: 'classSession',
                     attributes: ['id', 'name', 'class_code', 'type'],
+                    where: {
+                        teacher_id: teacherId,
+                        semester_id: semesterId   // Lọc theo học kỳ đã chọn
+                    },
                     include: [
                         {
                             model: model.Subject,
@@ -41,8 +89,7 @@ const getSchedulesByDay = async (teacherId, date) => {
                             as: 'class',
                             attributes: ['id', 'room_code', 'name']
                         }
-                    ],
-                    where: { teacher_id: teacherId }
+                    ]
                 }
             ],
             where: { weekday: weekday },
@@ -50,6 +97,8 @@ const getSchedulesByDay = async (teacherId, date) => {
                 [{ model: model.Time, as: 'time' }, 'start_time', 'ASC']
             ]
         });
+
+        console.log(`Found ${schedules.length} schedules`);
 
         // Format dữ liệu trả về
         const formattedSchedules = schedules.map(schedule => {
@@ -67,9 +116,12 @@ const getSchedulesByDay = async (teacherId, date) => {
             };
         });
 
+        // Thêm message khi không có lịch học
         return {
             success: true,
-            schedules: formattedSchedules
+            schedules: formattedSchedules,
+            activeSemesters: [semesterInfo],
+            message: formattedSchedules.length === 0 ? 'Không có lịch dạy trong ngày này' : null
         };
     } catch (error) {
         console.error('Error in getSchedulesByDay:', error);
@@ -83,12 +135,12 @@ const getSchedulesByDay = async (teacherId, date) => {
 /**
  * Lấy lịch dạy của giáo viên theo khoảng thời gian
  */
-const getSchedulesByRange = async (teacherId, startDate, endDate, view) => {
+const getSchedulesByRange = async (teacherId, startDate, endDate, semesterId) => {
     try {
-        if (!teacherId) {
+        if (!teacherId || !semesterId) {
             return {
                 success: false,
-                message: 'Thiếu thông tin giáo viên'
+                message: 'Thiếu thông tin giáo viên hoặc học kỳ'
             };
         }
 
@@ -99,124 +151,89 @@ const getSchedulesByRange = async (teacherId, startDate, endDate, view) => {
             };
         }
 
-        // Tìm học kỳ đang diễn ra
-        let activeSemesters = [];
-        try {
-            // Kiểm tra model.Semester trước khi truy vấn
-            if (model.Semester) {
-                activeSemesters = await model.Semester.findAll({
-                    where: {
-                        // Học kỳ bắt đầu trước ngày kết thúc và kết thúc sau ngày bắt đầu
-                        [Op.and]: [
-                            {
-                                start_time: {
-                                    [Op.lte]: endDate
-                                }
-                            },
-                            {
-                                end_time: {
-                                    [Op.gte]: startDate
-                                }
-                            }
-                        ]
-                    },
-                    order: [['start_time', 'ASC']]
-                });
-            }
-        } catch (error) {
-            console.error('Error querying semesters:', error);
-            // Tiếp tục với activeSemesters là mảng rỗng
-        }
-
-        // THAY ĐỔI QUAN TRỌNG: Nếu không có học kỳ nào trong khoảng thời gian, trả về mảng rỗng
-        if (activeSemesters.length === 0) {
+        // Lấy thông tin học kỳ đã chọn
+        const semester = await model.Semester.findByPk(semesterId);
+        if (!semester) {
             return {
-                success: true,
-                schedules: [],
-                activeSemesters: [],
-                noSemesterFound: true,
-                message: 'Không có học kỳ nào diễn ra trong khoảng thời gian này'
+                success: false,
+                message: 'Học kỳ không tồn tại'
             };
         }
 
-        // Tạo danh sách học kỳ để hiển thị thông tin
-        const semesterInfo = activeSemesters.map(sem => ({
-            id: sem.id,
-            name: sem.name,
-            startDate: sem.start_time,
-            endDate: sem.end_time
-        }));
+        const semesterInfo = {
+            id: semester.id,
+            name: semester.name,
+            startDate: semester.start_time,
+            endDate: semester.end_time
+        };
 
-        // Giới hạn dateRange chỉ bao gồm các ngày trong học kỳ
-        // Tìm ngày bắt đầu sớm nhất và ngày kết thúc muộn nhất của các học kỳ
-        let earliestStart = new Date(activeSemesters[0].start_time);
-        let latestEnd = new Date(activeSemesters[0].end_time);
+        // Giới hạn khoảng thời gian trong phạm vi của học kỳ
+        const semesterStart = new Date(semester.start_time);
+        const semesterEnd = new Date(semester.end_time);
+        const rangeStart = new Date(startDate);
+        const rangeEnd = new Date(endDate);
 
-        activeSemesters.forEach(sem => {
-            const semStart = new Date(sem.start_time);
-            const semEnd = new Date(sem.end_time);
+        // Nếu khoảng thời gian hoàn toàn nằm ngoài học kỳ
+        if (rangeEnd < semesterStart || rangeStart > semesterEnd) {
+            return {
+                success: true,
+                schedules: [],
+                activeSemesters: [semesterInfo],
+                message: 'Khoảng thời gian đã chọn không nằm trong học kỳ'
+            };
+        }
 
-            if (semStart < earliestStart) earliestStart = semStart;
-            if (semEnd > latestEnd) latestEnd = semEnd;
-        });
-
-        // Giới hạn startDate và endDate trong phạm vi của học kỳ
-        const effectiveStartDate = new Date(Math.max(new Date(startDate), earliestStart));
-        const effectiveEndDate = new Date(Math.min(new Date(endDate), latestEnd));
+        // Giới hạn dateRange chỉ trong học kỳ
+        const effectiveStart = new Date(Math.max(rangeStart.getTime(), semesterStart.getTime()));
+        const effectiveEnd = new Date(Math.min(rangeEnd.getTime(), semesterEnd.getTime()));
 
         // Xác định các ngày trong khoảng thời gian (chỉ trong học kỳ)
-        const dateRange = getDatesInRange(effectiveStartDate, effectiveEndDate);
+        const dateRange = getDatesInRange(effectiveStart, effectiveEnd);
         const weekdayList = dateRange.map(date => {
             let weekday = date.getDay();
             return weekday === 0 ? 7 : weekday;
         });
 
-        // Lấy lịch học theo danh sách weekday
-        let schedules = [];
-        try {
-            schedules = await model.Schedule.findAll({
-                include: [
-                    {
-                        model: model.Time,
-                        as: 'time',
-                        attributes: ['start_time', 'end_time', 'type']
-                    },
-                    {
-                        model: model.ClassSession,
-                        as: 'classSession',
-                        attributes: ['id', 'name', 'class_code', 'type', 'sub_id'],
-                        include: [
-                            {
-                                model: model.Subject,
-                                as: 'subject',
-                                attributes: ['id', 'name', 'sub_code']
-                            },
-                            {
-                                model: model.Class,
-                                as: 'class',
-                                attributes: ['id', 'room_code', 'name']
-                            }
-                        ],
-                        where: { teacher_id: teacherId }
-                    }
-                ],
-                where: {
-                    weekday: {
-                        [Op.in]: weekdayList
-                    }
+        // Lấy lịch học theo danh sách weekday và giới hạn trong học kỳ đã chọn
+        const schedules = await model.Schedule.findAll({
+            include: [
+                {
+                    model: model.Time,
+                    as: 'time',
+                    attributes: ['start_time', 'end_time', 'type']
                 },
-                order: [
-                    ['weekday', 'ASC'],
-                    [{ model: model.Time, as: 'time' }, 'start_time', 'ASC']
-                ]
-            });
-        } catch (error) {
-            console.error('Error querying schedules:', error);
-            return {
-                success: false,
-                message: 'Không thể lấy lịch dạy: ' + error.message
-            };
-        }
+                {
+                    model: model.ClassSession,
+                    as: 'classSession',
+                    attributes: ['id', 'name', 'class_code', 'type', 'sub_id'],
+                    where: {
+                        teacher_id: teacherId,
+                        semester_id: semesterId   // Lọc theo học kỳ đã chọn
+                    },
+                    include: [
+                        {
+                            model: model.Subject,
+                            as: 'subject',
+                            attributes: ['id', 'name', 'sub_code']
+                        },
+                        {
+                            model: model.Class,
+                            as: 'class',
+                            attributes: ['id', 'room_code', 'name']
+                        }
+                    ]
+                }
+            ],
+            where: {
+                weekday: {
+                    [Op.in]: weekdayList
+                }
+            },
+            order: [
+                ['weekday', 'ASC'],
+                [{ model: model.Time, as: 'time' }, 'start_time', 'ASC']
+            ]
+        });
 
         // Tạo lịch học cho từng ngày trong khoảng thời gian
         const formattedSchedules = [];
@@ -232,26 +249,16 @@ const getSchedulesByRange = async (teacherId, startDate, endDate, view) => {
             matchingSchedules.forEach(schedule => {
                 const plainSchedule = schedule.get({ plain: true });
 
-                // Kiểm tra xem ngày này có trong học kỳ không
-                const isInSemester = activeSemesters.some(sem => {
-                    const semStartDate = new Date(sem.start_time);
-                    const semEndDate = new Date(sem.end_time);
-                    return date >= semStartDate && date <= semEndDate;
+                formattedSchedules.push({
+                    id: plainSchedule.id,
+                    weekday: plainSchedule.weekday,
+                    date: dateStr,
+                    startTime: plainSchedule.time.start_time.substring(0, 5),
+                    endTime: plainSchedule.time.end_time.substring(0, 5),
+                    classSession: plainSchedule.classSession,
+                    subject: plainSchedule.classSession.subject,
+                    class: plainSchedule.classSession.class
                 });
-
-                // Chỉ thêm lịch học nếu ngày nằm trong học kỳ
-                if (isInSemester) {
-                    formattedSchedules.push({
-                        id: plainSchedule.id,
-                        weekday: plainSchedule.weekday,
-                        date: dateStr,
-                        startTime: plainSchedule.time.start_time.substring(0, 5),
-                        endTime: plainSchedule.time.end_time.substring(0, 5),
-                        classSession: plainSchedule.classSession,
-                        subject: plainSchedule.classSession.subject,
-                        class: plainSchedule.classSession.class
-                    });
-                }
             });
         });
 
@@ -261,11 +268,12 @@ const getSchedulesByRange = async (teacherId, startDate, endDate, view) => {
             return a.startTime.localeCompare(b.startTime);
         });
 
+        // Format dữ liệu trả về với message thông báo không có lịch
         return {
             success: true,
             schedules: formattedSchedules,
-            activeSemesters: semesterInfo,
-            semesterFiltered: true // Cho frontend biết kết quả đã được lọc theo học kỳ
+            activeSemesters: [semesterInfo],
+            message: formattedSchedules.length === 0 ? 'Không có lịch dạy trong khoảng thời gian này' : null
         };
     } catch (error) {
         console.error('Error in getSchedulesByRange:', error);
@@ -397,6 +405,28 @@ const getTeacherRooms = async (teacherId) => {
     }
 };
 
+/**
+ * Lấy danh sách học kỳ
+ */
+const getSemesters = async () => {
+    try {
+        const semesters = await model.Semester.findAll({
+            order: [['end_time', 'DESC']]
+        });
+
+        return {
+            success: true,
+            semesters
+        };
+    } catch (error) {
+        console.error('Error getting semesters:', error);
+        return {
+            success: false,
+            message: 'Không thể lấy danh sách học kỳ: ' + error.message
+        };
+    }
+};
+
 // Hàm tiện ích
 function getDatesInRange(startDate, endDate) {
     const start = new Date(startDate);
@@ -425,5 +455,6 @@ module.exports = {
     getSchedulesByRange,
     getTeacherSubjects,
     getTeacherClassSessions,
-    getTeacherRooms
+    getTeacherRooms,
+    getSemesters  // Thêm hàm này
 };

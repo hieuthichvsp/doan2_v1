@@ -4,7 +4,8 @@ document.addEventListener('DOMContentLoaded', function () {
     let currentView = 'day';
     let allSchedules = [];
     let filteredSchedules = [];
-    let activeSemesters = []; // Thêm biến này nếu chưa có
+    let activeSemesters = []; // Dùng để lưu danh sách học kỳ
+    let selectedSemesterId = null; // Lưu ID học kỳ đã chọn
 
     // Mảng tên thứ trong tuần
     const weekdayNames = {
@@ -27,18 +28,168 @@ document.addEventListener('DOMContentLoaded', function () {
     // ===== KHỞI TẠO =====
     setupEventListeners();
     updateCurrentDateDisplay();
-    loadData();
+    loadSemesters(); // Tải danh sách học kỳ trước
 
     // ===== FUNCTIONS =====
+
+    // Tải danh sách học kỳ
+    function loadSemesters() {
+        showLoading(true);
+
+        fetch('/teacher/api/semesters')
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    activeSemesters = data.semesters || [];
+                    populateSemesterSelector();
+
+                    // Nếu có học kỳ, tự động chọn học kỳ hiện tại
+                    if (activeSemesters.length > 0) {
+                        selectCurrentSemester();
+                    } else {
+                        showNoSemesterWarning();
+                    }
+                } else {
+                    console.error('Error loading semesters:', data.message);
+                    showNotification('Không thể tải danh sách học kỳ', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error loading semesters:', error);
+                showNotification('Đã xảy ra lỗi khi tải dữ liệu học kỳ', 'error');
+            })
+            .finally(() => {
+                showLoading(false);
+            });
+    }
+
+    // Điền dữ liệu vào dropdown học kỳ
+    function populateSemesterSelector() {
+        const semesterSelector = document.getElementById('semester-selector');
+        if (!semesterSelector) {
+            console.error('Element semester-selector not found');
+            return;
+        }
+
+        // Xóa tất cả options hiện tại trừ option đầu tiên
+        while (semesterSelector.options.length > 1) {
+            semesterSelector.remove(1);
+        }
+
+        // Thêm các options mới
+        activeSemesters.forEach(semester => {
+            const option = document.createElement('option');
+            option.value = semester.id;
+            option.textContent = semester.name;
+            semesterSelector.appendChild(option);
+        });
+
+        // Thêm event listener cho selector
+        semesterSelector.onchange = function () {
+            const selectedId = this.value;
+            if (selectedId) {
+                selectedSemesterId = parseInt(selectedId);
+                const selectedSemester = activeSemesters.find(sem => sem.id === selectedSemesterId);
+
+                // Ẩn cảnh báo và hiển thị lịch
+                document.getElementById('semester-warning').style.display = 'none';
+                document.getElementById('no-semester-selected').style.display = 'none';
+
+                // Hiển thị card điều khiển lịch
+                document.querySelector('.card:not(.semester-selection-card)').style.display = 'block';
+
+                // Tải lịch của học kỳ đã chọn
+                loadSchedules();
+            } else {
+                selectedSemesterId = null;
+                document.getElementById('semester-warning').style.display = 'flex';
+                document.getElementById('no-semester-selected').style.display = 'block';
+                document.querySelector('.card:not(.semester-selection-card)').style.display = 'none';
+            }
+        };
+    }
+
+    // Tự động chọn học kỳ hiện tại
+    function selectCurrentSemester() {
+        const currentDate = new Date();
+
+        // Tìm học kỳ đang diễn ra (bao gồm ngày hiện tại)
+        let currentSemester = activeSemesters.find(semester => {
+            const startDate = new Date(semester.start_time);
+            const endDate = new Date(semester.end_time);
+            return currentDate >= startDate && currentDate <= endDate;
+        });
+
+        // Nếu không có học kỳ hiện tại, chọn học kỳ mới nhất
+        if (!currentSemester && activeSemesters.length > 0) {
+            // Sắp xếp theo thời gian kết thúc giảm dần
+            activeSemesters.sort((a, b) => new Date(b.end_time) - new Date(a.end_time));
+            currentSemester = activeSemesters[0];
+        }
+
+        if (currentSemester) {
+            selectedSemesterId = currentSemester.id;
+
+            // Chọn option trong dropdown
+            const semesterSelector = document.getElementById('semester-selector');
+            if (semesterSelector) {
+                semesterSelector.value = currentSemester.id;
+
+                // Kích hoạt sự kiện change thủ công
+                const event = new Event('change');
+                semesterSelector.dispatchEvent(event);
+            }
+        } else {
+            // Nếu không thể chọn học kỳ hiện tại
+            document.getElementById('semester-warning').style.display = 'flex';
+            document.getElementById('no-semester-selected').style.display = 'block';
+            document.querySelector('.card:not(.semester-selection-card)').style.display = 'none';
+        }
+    }
+
+    // Hiển thị thông báo không có học kỳ
+    function showNoSemesterWarning() {
+        const semesterSelector = document.getElementById('semester-selector');
+        if (semesterSelector) {
+            semesterSelector.innerHTML = '<option value="">-- Không có học kỳ nào --</option>';
+        }
+
+        const semesterWarning = document.getElementById('semester-warning');
+        if (semesterWarning) {
+            semesterWarning.style.display = 'flex';
+            semesterWarning.textContent = 'Không có học kỳ nào trong hệ thống.';
+        }
+
+        const noSemesterMessage = document.getElementById('no-semester-selected');
+        if (noSemesterMessage) {
+            noSemesterMessage.style.display = 'block';
+        }
+
+        // Ẩn các view lịch
+        document.querySelectorAll('.schedule-view').forEach(view => {
+            view.classList.remove('active');
+        });
+
+        // Ẩn card điều khiển lịch
+        const scheduleCard = document.querySelector('.card:not(.semester-selection-card)');
+        if (scheduleCard) {
+            scheduleCard.style.display = 'none';
+        }
+    }
 
     // Thiết lập các sự kiện
     function setupEventListeners() {
         // Nút chuyển đổi chế độ xem
         document.querySelectorAll('.view-btn').forEach(button => {
             button.addEventListener('click', function () {
-                const view = this.dataset.view;
+                const view = this.getAttribute('data-view');
 
-                // Cập nhật trạng thái active
+                // Chỉ cho phép chuyển view nếu đã chọn học kỳ
+                if (!selectedSemesterId) {
+                    showNotification('Vui lòng chọn học kỳ trước khi xem lịch', 'warning');
+                    return;
+                }
+
                 document.querySelectorAll('.view-btn').forEach(btn => {
                     btn.classList.remove('active');
                 });
@@ -48,20 +199,32 @@ document.addEventListener('DOMContentLoaded', function () {
             });
         });
 
-        // Điều hướng ngày - Sửa đoạn này
-        document.getElementById('prev-date').addEventListener('click', () => changeDate(-1));
-        document.getElementById('next-date').addEventListener('click', () => changeDate(1));
+        // Điều hướng ngày
+        document.getElementById('prev-date').addEventListener('click', () => {
+            if (!selectedSemesterId) {
+                showNotification('Vui lòng chọn học kỳ trước khi điều hướng lịch', 'warning');
+                return;
+            }
+            changeDate(-1);
+        });
+
+        document.getElementById('next-date').addEventListener('click', () => {
+            if (!selectedSemesterId) {
+                showNotification('Vui lòng chọn học kỳ trước khi điều hướng lịch', 'warning');
+                return;
+            }
+            changeDate(1);
+        });
+
         document.getElementById('today-btn').addEventListener('click', () => {
+            if (!selectedSemesterId) {
+                showNotification('Vui lòng chọn học kỳ trước khi điều hướng lịch', 'warning');
+                return;
+            }
             currentDate = new Date();
             updateCurrentDateDisplay();
             loadSchedules();
         });
-
-        // Bộ lọc
-        // document.querySelector('.close-filter-modal').addEventListener('click', closeFilterModal);
-        // document.getElementById('apply-filter').addEventListener('click', applyFilters);
-        // document.getElementById('reset-filter').addEventListener('click', resetFilters);
-        // document.getElementById('clear-filter').addEventListener('click', resetFilters);
 
         // Modal chi tiết
         document.querySelector('.close-modal').addEventListener('click', closeModalDetail);
@@ -206,24 +369,40 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Cập nhật hàm loadSchedules
     function loadSchedules() {
+        if (!selectedSemesterId) {
+            showNotification('Vui lòng chọn học kỳ trước khi xem lịch', 'warning');
+            return;
+        }
+
         showLoading(true);
 
         const teacherId = document.querySelector('meta[name="current-user-id"]').content;
 
         let params = new URLSearchParams();
         params.append('teacherId', teacherId);
+        params.append('semesterId', selectedSemesterId);
 
         if (currentView === 'day') {
             params.append('date', formatDateForAPI(currentDate));
-        } else {
-            const startDate = getStartDateForView();
-            const endDate = getEndDateForView();
+            params.append('view', 'day');
+        } else if (currentView === 'week') {
+            const startDate = getStartOfWeek(currentDate);
+            const endDate = new Date(startDate);
+            endDate.setDate(startDate.getDate() + 6);
+
             params.append('startDate', formatDateForAPI(startDate));
             params.append('endDate', formatDateForAPI(endDate));
-            params.append('view', currentView);
+            params.append('view', 'week');
+        } else if (currentView === 'month') {
+            const firstDay = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+            const lastDay = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
+
+            params.append('startDate', formatDateForAPI(firstDay));
+            params.append('endDate', formatDateForAPI(lastDay));
+            params.append('view', 'month');
         }
 
-        // Sửa: Sử dụng đối tượng filters thay vì biến không tồn tại
+        // Thêm các filter nếu có
         if (filters.subject) params.append('subjectId', filters.subject);
         if (filters.classSession) params.append('classSessionId', filters.classSession);
         if (filters.room) params.append('roomId', filters.room);
@@ -232,29 +411,41 @@ document.addEventListener('DOMContentLoaded', function () {
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
+                    // Cập nhật dữ liệu lịch
                     allSchedules = data.schedules || [];
                     filteredSchedules = [...allSchedules];
 
-                    // Lưu thông tin học kỳ đang hoạt động
-                    activeSemesters = data.activeSemesters || [];
-
-                    // Hiển thị cảnh báo khi không có học kỳ
-                    if (data.noSemesterFound) {
-                        showNoSemesterWarning();
-                    } else {
-                        hideNoSemesterWarning();
+                    // Cập nhật thông tin học kỳ đang hoạt động
+                    if (data.activeSemesters) {
+                        activeSemesters = data.activeSemesters;
                     }
 
+                    // Kiểm tra nếu không có lịch nào
+                    if (allSchedules.length === 0) {
+                        // Hiển thị thông báo không có lịch học tương ứng với view hiện tại
+                        showEmptyScheduleMessage(currentView);
+                    } else {
+                        // Ẩn thông báo không có lịch học
+                        hideEmptyScheduleMessage(currentView);
+                    }
+
+                    // Hiển thị lịch
                     renderSchedule();
                 } else {
-                    console.error('Error:', data.message);
+                    console.error('Error loading schedules:', data.message);
                     showNotification(data.message || 'Không thể tải lịch dạy', 'error');
+                    allSchedules = [];
+                    filteredSchedules = [];
+                    showEmptyScheduleMessage(currentView);
+                    renderSchedule();
                 }
             })
             .catch(error => {
                 console.error('Error loading schedules:', error);
-                // Tạo dữ liệu mẫu khi API bị lỗi
-                createSampleData();
+                showNotification('Đã xảy ra lỗi khi tải dữ liệu lịch dạy', 'error');
+                allSchedules = [];
+                filteredSchedules = [];
+                showEmptyScheduleMessage(currentView);
                 renderSchedule();
             })
             .finally(() => {
@@ -263,386 +454,71 @@ document.addEventListener('DOMContentLoaded', function () {
             });
     }
 
-    // Thêm hàm hiển thị cảnh báo khi không có học kỳ
-    function showNoSemesterWarning() {
-        // Kiểm tra nếu đã có cảnh báo thì không tạo mới
-        if (document.getElementById('no-semester-warning')) return;
+    // Thêm hàm hiển thị thông báo không có lịch học
+    function showEmptyScheduleMessage(view) {
+        // Ẩn bảng lịch
+        if (view === 'day') {
+            document.getElementById('day-schedule-table').style.display = 'none';
+            document.getElementById('day-view-empty').style.display = 'block';
+        } else if (view === 'week') {
+            const weekViewTabs = document.querySelector('#week-view .weekday-tabs');
+            const weekViewTables = document.querySelector('#week-view .tab-content');
 
-        const warningElement = document.createElement('div');
-        warningElement.id = 'no-semester-warning';
-        warningElement.className = 'alert alert-warning mt-3';
-        warningElement.innerHTML = `
-            <strong>Lưu ý:</strong> Không có học kỳ nào được tìm thấy trong khoảng thời gian này. 
-            Vui lòng chọn thời gian khác hoặc liên hệ quản trị viên để biết thêm thông tin.
-        `;
+            if (weekViewTabs) weekViewTabs.style.display = 'none';
+            if (weekViewTables) weekViewTables.style.display = 'none';
 
-        // Thêm vào tất cả các view
-        ['day-view', 'week-view', 'month-view'].forEach(viewId => {
-            const viewElement = document.getElementById(viewId);
-            if (viewElement) {
-                // Chèn cảnh báo vào đầu phần nội dung
-                const firstChild = viewElement.firstChild;
-                if (firstChild) {
-                    viewElement.insertBefore(warningElement.cloneNode(true), firstChild);
-                } else {
-                    viewElement.appendChild(warningElement.cloneNode(true));
-                }
-            }
-        });
-    }
+            document.getElementById('week-view-empty').style.display = 'block';
+        } else if (view === 'month') {
+            const monthViewCalendar = document.querySelector('#month-view .calendar-container');
 
-    // Thêm hàm ẩn cảnh báo khi có học kỳ
-    function hideNoSemesterWarning() {
-        document.querySelectorAll('#no-semester-warning').forEach(warning => {
-            warning.remove();
-        });
-    }
+            if (monthViewCalendar) monthViewCalendar.style.display = 'none';
 
-    // Thêm hàm lấy ngày bắt đầu cho view hiện tại
-    function getStartDateForView() {
-        if (currentView === 'week') {
-            return getStartOfWeek(currentDate);
-        } else if (currentView === 'month') {
-            return new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
-        }
-        return new Date(currentDate);
-    }
-
-    // Thêm hàm lấy ngày kết thúc cho view hiện tại
-    function getEndDateForView() {
-        if (currentView === 'week') {
-            const endOfWeek = new Date(getStartOfWeek(currentDate));
-            endOfWeek.setDate(endOfWeek.getDate() + 6);
-            return endOfWeek;
-        } else if (currentView === 'month') {
-            return new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
-        }
-        return new Date(currentDate);
-    }
-
-    // Hàm tạo mẫu dữ liệu để test khi API bị lỗi
-    function createSampleData() {
-        try {
-            // Tạo học kỳ mẫu
-            activeSemesters = [
-                {
-                    id: 1,
-                    name: 'Học kỳ hiện tại',
-                    startDate: formatDateForAPI(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1)),
-                    endDate: formatDateForAPI(new Date(currentDate.getFullYear(), currentDate.getMonth() + 2, 0))
-                }
-            ];
-
-            // Xác định khoảng thời gian dựa trên view
-            let startDate, endDate;
-
-            if (currentView === 'day') {
-                startDate = new Date(currentDate);
-                endDate = new Date(currentDate);
-            } else if (currentView === 'week') {
-                startDate = getStartOfWeek(currentDate);
-                endDate = new Date(startDate);
-                endDate.setDate(endDate.getDate() + 6);
-            } else if (currentView === 'month') {
-                startDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
-                endDate = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
-            }
-
-            // Chỉ tạo dữ liệu trong khoảng thời gian của học kỳ
-            const semStartDate = new Date(activeSemesters[0].startDate);
-            const semEndDate = new Date(activeSemesters[0].endDate);
-
-            if (endDate < semStartDate || startDate > semEndDate) {
-                // Nếu khoảng thời gian đang xem không nằm trong học kỳ
-                allSchedules = [];
-                filteredSchedules = [];
-                showNoSemesterWarning();
-                return;
-            }
-
-            // Giới hạn khoảng thời gian trong học kỳ
-            if (startDate < semStartDate) startDate = new Date(semStartDate);
-            if (endDate > semEndDate) endDate = new Date(semEndDate);
-
-            // Tạo ngẫu nhiên 10 lịch trong khoảng thời gian
-            allSchedules = [];
-
-            // Lấy danh sách ngày trong khoảng
-            const dateRange = getDatesInRange(startDate, endDate);
-
-            // Tạo một số lịch ngẫu nhiên trong khoảng thời gian
-            for (let i = 1; i <= 10; i++) {
-                const randomIndex = Math.floor(Math.random() * dateRange.length);
-                const eventDate = dateRange[randomIndex];
-
-                if (!isNaN(eventDate.getTime())) {
-                    allSchedules.push({
-                        id: i,
-                        date: formatDateForAPI(eventDate),
-                        weekday: eventDate.getDay() === 0 ? 7 : eventDate.getDay(),
-                        startTime: '08:00',
-                        endTime: '09:30',
-                        classSession: {
-                            id: i,
-                            name: `Nhóm ${i}`,
-                            class_code: `N${i}`
-                        },
-                        subject: {
-                            id: Math.ceil(i / 2),
-                            name: `Môn học ${Math.ceil(i / 2)}`
-                        },
-                        class: {
-                            id: i,
-                            room_code: `A${100 + i}`
-                        }
-                    });
-                }
-            }
-
-            // Sort by date
-            allSchedules.sort((a, b) => a.date.localeCompare(b.date));
-
-            // Áp dụng dữ liệu mẫu
-            filteredSchedules = [...allSchedules];
-
-            console.log('Created sample data:', allSchedules);
-        } catch (error) {
-            console.error('Error creating sample data:', error);
-            allSchedules = [];
-            filteredSchedules = [];
+            document.getElementById('month-view-empty').style.display = 'block';
         }
     }
 
-    // Hàm hiển thị/ẩn màn hình loading
-    function showLoading(show) {
-        // Ở đây bạn có thể thêm code để hiển thị hoặc ẩn biểu tượng loading
-        // Ví dụ:
-        const loadingIndicator = document.createElement('div');
-        loadingIndicator.id = 'loading-indicator';
-        loadingIndicator.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(255,255,255,0.7);display:flex;justify-content:center;align-items:center;z-index:9999;';
-        loadingIndicator.innerHTML = '<div class="spinner" style="border:5px solid #f3f3f3;border-top:5px solid #3498db;border-radius:50%;width:50px;height:50px;animation:spin 1s linear infinite;"></div>';
+    // Thêm hàm ẩn thông báo không có lịch học
+    function hideEmptyScheduleMessage(view) {
+        // Hiển thị bảng lịch
+        if (view === 'day') {
+            document.getElementById('day-schedule-table').style.display = 'block';
+            document.getElementById('day-view-empty').style.display = 'none';
+        } else if (view === 'week') {
+            const weekViewTabs = document.querySelector('#week-view .weekday-tabs');
+            const weekViewTables = document.querySelector('#week-view .tab-content');
 
-        // Thêm style animation
-        if (!document.getElementById('loading-style')) {
-            const style = document.createElement('style');
-            style.id = 'loading-style';
-            style.textContent = '@keyframes spin {0% {transform:rotate(0deg);} 100% {transform:rotate(360deg);}}';
-            document.head.appendChild(style);
-        }
+            if (weekViewTabs) weekViewTabs.style.display = 'block';
+            if (weekViewTables) weekViewTables.style.display = 'block';
 
-        if (show) {
-            // Kiểm tra xem đã có loadingIndicator chưa
-            if (!document.getElementById('loading-indicator')) {
-                document.body.appendChild(loadingIndicator);
-            }
-        } else {
-            // Xóa loadingIndicator nếu có
-            const existingIndicator = document.getElementById('loading-indicator');
-            if (existingIndicator) {
-                existingIndicator.remove();
-            }
+            document.getElementById('week-view-empty').style.display = 'none';
+        } else if (view === 'month') {
+            const monthViewCalendar = document.querySelector('#month-view .calendar-container');
+
+            if (monthViewCalendar) monthViewCalendar.style.display = 'block';
+
+            document.getElementById('month-view-empty').style.display = 'none';
         }
     }
 
-    // Thay đổi view (ngày/tuần/tháng)
-    function changeView(view) {
-        currentView = view;
-
-        // Ẩn tất cả các view
-        document.querySelectorAll('.schedule-view').forEach(el => {
-            el.classList.remove('active');
-        });
-
-        // Hiển thị view được chọn
-        document.getElementById(`${view}-view`).classList.add('active');
-
-        // Cập nhật hiển thị ngày
-        updateCurrentDateDisplay();
-
-        // Tải lịch mới
-        loadSchedules();
-    }
-
-    // Điều hướng ngày
-    function changeDate(direction) {
-        try {
-            // Lưu ngày hiện tại để so sánh sau khi thay đổi
-            const previousDate = new Date(currentDate);
-
-            // Thay đổi ngày theo hướng và view hiện tại
-            if (currentView === 'day') {
-                currentDate.setDate(currentDate.getDate() + direction);
-            } else if (currentView === 'week') {
-                currentDate.setDate(currentDate.getDate() + (7 * direction));
-            } else if (currentView === 'month') {
-                currentDate.setMonth(currentDate.getMonth() + direction);
-            }
-
-            // Log để debug
-            console.log(`Changed date from ${formatDate(previousDate)} to ${formatDate(currentDate)}`);
-
-            // Cập nhật hiển thị ngày
-            updateCurrentDateDisplay();
-
-            // Nếu đi quá xa trong tương lai (ví dụ: hơn 2 năm), hiển thị cảnh báo
-            const twoYearsLater = new Date();
-            twoYearsLater.setFullYear(twoYearsLater.getFullYear() + 2);
-
-            if (currentDate > twoYearsLater) {
-                showNotification('Đang xem lịch quá xa trong tương lai, có thể không có dữ liệu học kỳ', 'warning');
-            }
-
-            // Tải lại lịch với ngày mới
-            loadSchedules();
-        } catch (error) {
-            console.error('Error changing date:', error);
-            showNotification('Đã xảy ra lỗi khi chuyển đổi ngày', 'error');
-
-            // Khôi phục ngày nếu có lỗi
-            currentDate = new Date();
-            updateCurrentDateDisplay();
-            loadSchedules();
-        }
-    }
-
-    // Phối hợp hai hàm
-    function navigateDate(direction) {
-        console.log('navigateDate called with direction:', direction);
-
-        if (direction === 'prev') {
-            changeDate(-1);
-        } else if (direction === 'next') {
-            changeDate(1);
-        } else if (direction === 'today') {
-            currentDate = new Date();
-            updateCurrentDateDisplay();
-            loadSchedules();
-        } else {
-            // Nếu direction là một số
-            changeDate(direction);
-        }
-    }
-
-    // Hiển thị bộ lọc
-    function showFilterModal() {
-        document.getElementById('filter-modal').style.display = 'block';
-    }
-
-    // Đóng bộ lọc
-    function closeFilterModal() {
-        document.getElementById('filter-modal').style.display = 'none';
-    }
-
-    // Áp dụng bộ lọc
-    function applyFilters() {
-        filters.subject = document.getElementById('filter-subject').value;
-        filters.classSession = document.getElementById('filter-class-session').value;
-        filters.room = document.getElementById('filter-room').value;
-
-        // Áp dụng bộ lọc vào danh sách
-        filteredSchedules = allSchedules.filter(schedule => {
-            let match = true;
-
-            if (filters.subject && schedule.subject) {
-                match = match && schedule.subject.id == filters.subject;
-            }
-
-            if (filters.classSession && schedule.classSession) {
-                match = match && schedule.classSession.id == filters.classSession;
-            }
-
-            if (filters.room && schedule.class) {
-                match = match && schedule.class.id == filters.room;
-            }
-
-            return match;
-        });
-
-        renderSchedule();
-        updateFilterStatus();
-        closeFilterModal();
-    }
-
-    // Reset bộ lọc
-    function resetFilters() {
-        filters = {
-            subject: '',
-            classSession: '',
-            room: ''
-        };
-
-        document.getElementById('filter-subject').value = '';
-        document.getElementById('filter-class-session').value = '';
-        document.getElementById('filter-room').value = '';
-
-        filteredSchedules = [...allSchedules];
-        renderSchedule();
-        document.getElementById('filter-results-info').style.display = 'none';
-    }
-
-    // Cập nhật hiển thị trạng thái lọc
-    function updateFilterStatus() {
-        const filterInfo = document.getElementById('filter-results-info');
-        const filterSummary = document.getElementById('filter-summary');
-
-        // Kiểm tra xem có bộ lọc nào đang được áp dụng không
-        const hasFilter = filters.subject || filters.classSession || filters.room;
-
-        if (hasFilter) {
-            // Tạo thông tin tóm tắt bộ lọc
-            let summaryText = [];
-
-            if (filters.subject) {
-                const subjectName = document.querySelector(`#filter-subject option[value="${filters.subject}"]`).textContent;
-                summaryText.push(`Môn học: ${subjectName}`);
-            }
-
-            if (filters.classSession) {
-                const className = document.querySelector(`#filter-class-session option[value="${filters.classSession}"]`).textContent;
-                summaryText.push(`Lớp học phần: ${className}`);
-            }
-
-            if (filters.room) {
-                const roomName = document.querySelector(`#filter-room option[value="${filters.room}"]`).textContent;
-                summaryText.push(`Phòng: ${roomName}`);
-            }
-
-            filterSummary.textContent = summaryText.join(' | ');
-            filterInfo.style.display = 'block';
-        } else {
-            filterInfo.style.display = 'none';
-        }
-    }
-
-    // Hàm cập nhật hiển thị lịch dạy dựa trên view hiện tại
+    // Cập nhật hàm renderSchedule để gọi đúng hàm render cho từng view
     function renderSchedule() {
         try {
             console.log(`Rendering schedule for ${currentView} view with ${filteredSchedules.length} events`);
 
-            // Ẩn tất cả các view
-            document.querySelectorAll('.schedule-view').forEach(view => {
-                view.classList.remove('active');
-            });
-
-            // Hiển thị view hiện tại
-            const currentViewElement = document.getElementById(`${currentView}-view`);
-            if (currentViewElement) {
-                currentViewElement.classList.add('active');
+            // Kiểm tra xem có lịch nào sau khi lọc không
+            if (filteredSchedules.length === 0) {
+                showEmptyScheduleMessage(currentView);
             } else {
-                console.error(`Element with id "${currentView}-view" not found`);
-                showNotification(`Không tìm thấy view "${currentView}"`, 'error');
-                return;
+                hideEmptyScheduleMessage(currentView);
             }
 
-            // Render view tương ứng
+            // Gọi hàm render tương ứng với view hiện tại
             if (currentView === 'day') {
-                renderDayView();
+                renderDaySchedule();
             } else if (currentView === 'week') {
-                renderWeekView();
+                renderWeekSchedule();
             } else if (currentView === 'month') {
-                renderMonthView();
-            } else if (currentView === 'semester') {
-                // Học kỳ được tải riêng khi người dùng nhấn nút "Xem lịch"
+                renderMonthSchedule();
             }
         } catch (error) {
             console.error('Error rendering schedule:', error);
@@ -665,39 +541,74 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    // Hiển thị lịch dạy theo ngày
-    function renderDayView() {
-        const tableBody = document.getElementById('day-schedule-events');
+    // Hiển thị lịch ngày
+    function renderDaySchedule() {
+        // Thử tìm phần tử với một số selector khác nhau
+        const tableBody = document.getElementById('day-schedule-events') ||
+            document.querySelector('#day-view table tbody') ||
+            document.querySelector('#day-schedule-table tbody');
+
         if (!tableBody) {
-            console.error('Element day-schedule-events not found');
+            console.error('Element for day schedule table body not found. Checking DOM structure...');
+
+            // Log cấu trúc DOM của day-view để debug
+            const dayView = document.getElementById('day-view');
+            if (dayView) {
+                console.log('day-view structure:', dayView.innerHTML);
+            } else {
+                console.error('day-view element not found either');
+            }
+
+            // Thử tạo phần tử tbody nếu tồn tại bảng nhưng không có tbody
+            const dayTable = document.querySelector('#day-view table') ||
+                document.getElementById('day-schedule-table');
+
+            if (dayTable) {
+                console.log('Found day table, creating tbody if needed');
+                let tbody = dayTable.querySelector('tbody');
+
+                if (!tbody) {
+                    tbody = document.createElement('tbody');
+                    tbody.id = 'day-schedule-events';
+                    dayTable.appendChild(tbody);
+                    console.log('Created new tbody element with id day-schedule-events');
+                }
+
+                renderDayEvents(tbody);
+            } else {
+                showNotification('Không thể hiển thị lịch ngày do lỗi cấu trúc DOM', 'error');
+            }
+
             return;
         }
 
+        renderDayEvents(tableBody);
+    }
+
+    // Tách logic render events ra một hàm riêng
+    function renderDayEvents(tableBody) {
+        // Xóa nội dung cũ
         tableBody.innerHTML = '';
 
-        // Lọc sự kiện theo ngày hiện tại - phải định nghĩa trước khi sử dụng
+        // Lọc sự kiện theo ngày hiện tại 
+        const dateStr = formatDateForAPI(currentDate);
+        console.log('Looking for events on date:', dateStr);
+
         const dayEvents = filteredSchedules.filter(event => {
-            const eventDate = new Date(event.date);
-            return isSameDay(eventDate, currentDate);
+            // So sánh trực tiếp chuỗi date từ API
+            return event.date === dateStr;
         });
 
-        // Log để debug
         console.log('Day Events:', dayEvents);
-        console.log('Current Date:', currentDate);
 
         // Nếu không có lịch nào
         if (!dayEvents || dayEvents.length === 0) {
-            const emptyRow = document.createElement('tr');
-            emptyRow.innerHTML = `
-                <td colspan="5" class="no-data-cell">
-                    <div class="no-events">
-                        <p>Không có buổi học nào vào ngày này</p>
-                    </div>
-                </td>
-            `;
-            tableBody.appendChild(emptyRow);
+            showEmptyScheduleMessage('day');
             return;
         }
+
+        // Hiển thị bảng lịch và ẩn thông báo không có lịch học
+        hideEmptyScheduleMessage('day');
 
         // Sắp xếp lịch theo thời gian
         dayEvents.sort((a, b) => a.startTime.localeCompare(b.startTime));
@@ -721,25 +632,8 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // Thêm hàm kiểm tra xem ngày có trong học kỳ nào không
-    function checkDateInAnySemester(date) {
-        if (!activeSemesters || activeSemesters.length === 0) return false;
-
-        const checkDate = new Date(date);
-        checkDate.setHours(0, 0, 0, 0);
-
-        return activeSemesters.some(sem => {
-            const startDate = new Date(sem.startDate);
-            const endDate = new Date(sem.endDate);
-            startDate.setHours(0, 0, 0, 0);
-            endDate.setHours(0, 0, 0, 0);
-
-            return checkDate >= startDate && checkDate <= endDate;
-        });
-    }
-
-    // Hiển thị lịch dạy theo tuần
-    function renderWeekView() {
+    // Hiển thị lịch tuần
+    function renderWeekSchedule() {
         const tableBody = document.getElementById('week-schedule-body');
         if (!tableBody) {
             console.error('Element week-schedule-body not found');
@@ -771,17 +665,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
         // Nếu không có lịch nào
         if (!weekEvents || weekEvents.length === 0) {
-            const emptyRow = document.createElement('tr');
-            emptyRow.innerHTML = `
-                <td colspan="7" class="no-data-cell">
-                    <div class="no-events">
-                        <p>Không có buổi học nào trong tuần này</p>
-                    </div>
-                </td>
-            `;
-            tableBody.appendChild(emptyRow);
+            showEmptyScheduleMessage('week');
             return;
         }
+
+        // Hiển thị bảng lịch và ẩn thông báo không có lịch học
+        hideEmptyScheduleMessage('week');
 
         // Sắp xếp theo ngày và thời gian
         weekEvents.sort((a, b) => {
@@ -818,8 +707,8 @@ document.addEventListener('DOMContentLoaded', function () {
         setupWeekdayTabs();
     }
 
-    // Hiển thị lịch dạy theo tháng
-    function renderMonthView() {
+    // Hiển thị lịch tháng
+    function renderMonthSchedule() {
         try {
             // Cập nhật tiêu đề tháng
             const monthTitleElement = document.getElementById('month-title');
@@ -827,6 +716,25 @@ document.addEventListener('DOMContentLoaded', function () {
                 const monthNames = ['Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4', 'Tháng 5', 'Tháng 6', 'Tháng 7', 'Tháng 8', 'Tháng 9', 'Tháng 10', 'Tháng 11', 'Tháng 12'];
                 monthTitleElement.textContent = `${monthNames[currentDate.getMonth()]} ${currentDate.getFullYear()}`;
             }
+
+            // Lấy ngày đầu tiên và cuối cùng của tháng
+            const firstDay = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+            const lastDay = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
+
+            // Lọc sự kiện trong tháng
+            const monthEvents = filteredSchedules.filter(event => {
+                const eventDate = new Date(event.date);
+                return eventDate >= firstDay && eventDate <= lastDay;
+            });
+
+            // Nếu không có lịch nào trong tháng
+            if (!monthEvents || monthEvents.length === 0) {
+                showEmptyScheduleMessage('month');
+                return;
+            }
+
+            // Hiển thị bảng lịch và ẩn thông báo không có lịch học
+            hideEmptyScheduleMessage('month');
 
             // Render lưới lịch
             renderCalendarGrid();
@@ -1098,7 +1006,6 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // Hàm định dạng ngày cho API (yyyy-mm-dd)
-    // Sửa hàm formatDateForAPI để đảm bảo luôn trả về giá trị hợp lệ
     function formatDateForAPI(date) {
         try {
             if (!(date instanceof Date) || isNaN(date.getTime())) {
@@ -1116,6 +1023,26 @@ document.addEventListener('DOMContentLoaded', function () {
             const today = new Date();
             return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
         }
+    }
+
+    // Hàm định dạng ngày tối ưu hơn
+    function formatDateDisplay(date) {
+        if (!(date instanceof Date) || isNaN(date.getTime())) {
+            console.error('Invalid date for display:', date);
+            return 'Invalid date';
+        }
+
+        const day = String(date.getDate()).padStart(2, '0');
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const year = date.getFullYear();
+
+        // Thêm tên thứ
+        const weekday = date.getDay();
+        const weekdayIndex = weekday === 0 ? 7 : weekday;
+        const weekdayName = weekdayNames[weekdayIndex];
+
+        // Định dạng: Thứ Hai, 16/05/2025
+        return `${weekdayName}, ${day}/${month}/${year}`;
     }
 
     // Hàm so sánh hai ngày xem có cùng ngày không
@@ -1303,114 +1230,102 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    // Đặt lại sự kiện cho các nút điều hướng
-    document.addEventListener('DOMContentLoaded', function () {
-        // Đảm bảo các nút điều hướng hoạt động
-        const prevButton = document.getElementById('prev-date');
-        const nextButton = document.getElementById('next-date');
-        const todayButton = document.getElementById('today-btn');
-
-        if (prevButton) {
-            prevButton.onclick = function () {
-                console.log('Previous button clicked');
-                changeDate(-1);
-            };
+    // Hàm thay đổi ngày
+    function changeDate(amount) {
+        if (currentView === 'day') {
+            // Thay đổi ngày
+            currentDate.setDate(currentDate.getDate() + amount);
+        } else if (currentView === 'week') {
+            // Thay đổi tuần
+            currentDate.setDate(currentDate.getDate() + (amount * 7));
+        } else if (currentView === 'month') {
+            // Thay đổi tháng
+            currentDate.setMonth(currentDate.getMonth() + amount);
         }
 
-        if (nextButton) {
-            nextButton.onclick = function () {
-                console.log('Next button clicked');
-                changeDate(1);
-            };
-        }
-
-        if (todayButton) {
-            todayButton.onclick = function () {
-                console.log('Today button clicked');
-                currentDate = new Date();
-                updateCurrentDateDisplay();
-                loadSchedules();
-            };
-        }
-    });
-
-    // Thêm hàm formatDateDisplay nếu bạn muốn định dạng ngày theo cách khác
-    function formatDateDisplay(date) {
-        if (!(date instanceof Date) || isNaN(date.getTime())) {
-            console.error('Invalid date for display:', date);
-            return 'Invalid date';
-        }
-
-        const day = String(date.getDate()).padStart(2, '0');
-        const month = String(date.getMonth() + 1).padStart(2, '0');
-        const year = date.getFullYear();
-
-        // Thêm tên thứ
-        const weekday = date.getDay();
-        const weekdayIndex = weekday === 0 ? 7 : weekday;
-        const weekdayName = weekdayNames[weekdayIndex];
-
-        // Định dạng: Thứ Hai, 16/05/2025
-        return `${weekdayName}, ${day}/${month}/${year}`;
+        // Cập nhật hiển thị ngày và tải dữ liệu mới
+        updateCurrentDateDisplay();
+        loadSchedules();
     }
 
-    // Thêm vào file JS hoặc inline script
-    const sidebar = document.getElementById('sidebar');
-    const toggleBtn = document.getElementById('sidebar-toggle'); // Button để toggle sidebar
+    // Hàm chuyển đổi view
+    function changeView(view) {
+        if (!selectedSemesterId) {
+            showNotification('Vui lòng chọn học kỳ trước khi thay đổi chế độ xem', 'warning');
+            return;
+        }
 
-    if (toggleBtn && sidebar) {
-        toggleBtn.addEventListener('click', function () {
-            sidebar.classList.toggle('collapsed');
+        currentView = view;
 
-            // Lưu trạng thái sidebar vào localStorage (tùy chọn)
-            const isCollapsed = sidebar.classList.contains('collapsed');
-            localStorage.setItem('sidebarCollapsed', isCollapsed);
+        // Ẩn tất cả các view
+        document.querySelectorAll('.schedule-view').forEach(el => {
+            el.classList.remove('active');
         });
 
-        // Khôi phục trạng thái sidebar từ localStorage (tùy chọn)
-        const savedState = localStorage.getItem('sidebarCollapsed');
-        if (savedState === 'true') {
-            sidebar.classList.add('collapsed');
+        // Hiển thị view được chọn
+        document.getElementById(`${view}-view`).classList.add('active');
+
+        // Cập nhật hiển thị ngày
+        updateCurrentDateDisplay();
+
+        // Tải lịch mới
+        loadSchedules();
+    }
+
+    // Hàm hiển thị thông báo
+    function showNotification(message, type = 'info') {
+        const notificationContainer = document.getElementById('notification-container');
+
+        if (!notificationContainer) {
+            console.warn('Notification container not found');
+            alert(message); // Fallback to alert
+            return;
         }
-    }
 
-    // Xử lý responsive cho mobile
-    const menuToggle = document.getElementById('mobile-menu-toggle');
-    if (menuToggle && sidebar) {
-        menuToggle.addEventListener('click', function () {
-            sidebar.classList.toggle('expanded');
+        const notification = document.createElement('div');
+        notification.className = `notification ${type}`;
+        notification.innerHTML = `
+            <div class="notification-icon">
+                <i class="fas ${type === 'error' ? 'fa-exclamation-circle' : type === 'warning' ? 'fa-exclamation-triangle' : 'fa-check-circle'}"></i>
+            </div>
+            <div class="notification-content">
+                <div class="notification-title">${type === 'error' ? 'Lỗi' : type === 'warning' ? 'Cảnh báo' : 'Thông báo'}</div>
+                <div class="notification-message">${message}</div>
+            </div>
+            <button class="notification-close">×</button>
+        `;
+
+        // Thêm sự kiện đóng
+        notification.querySelector('.notification-close').addEventListener('click', function () {
+            notification.remove();
         });
+
+        // Thêm vào container
+        notificationContainer.appendChild(notification);
+
+        // Tự động đóng sau 5 giây
+        setTimeout(() => {
+            notification.classList.add('hide');
+            setTimeout(() => {
+                notification.remove();
+            }, 300);
+        }, 5000);
     }
 
-    // Xử lý sidebar
-    document.addEventListener('DOMContentLoaded', function () {
-        // Kiểm tra trạng thái ban đầu của checkbox
-        const openCheckbox = document.getElementById('open');
-        if (openCheckbox) {
-            // Lấy trạng thái đã lưu (nếu có)
-            const savedState = localStorage.getItem('sidebarOpen');
-            if (savedState === 'true') {
-                openCheckbox.checked = true;
+    // Hiển thị loading 
+    function showLoading(show) {
+        const loader = document.getElementById('loading-overlay');
+        if (!loader) {
+            if (show) {
+                // Tạo mới nếu chưa có
+                const loadingOverlay = document.createElement('div');
+                loadingOverlay.id = 'loading-overlay';
+                loadingOverlay.className = 'loading-overlay';
+                loadingOverlay.innerHTML = '<div class="spinner"></div>';
+                document.body.appendChild(loadingOverlay);
             }
-
-            // Lưu trạng thái khi thay đổi
-            openCheckbox.addEventListener('change', function () {
-                localStorage.setItem('sidebarOpen', this.checked);
-
-                // Cập nhật class cho body để CSS hoạt động
-                if (this.checked) {
-                    document.body.classList.add('sidebar-open');
-                } else {
-                    document.body.classList.remove('sidebar-open');
-                }
-
-                // Kích hoạt sự kiện resize để các component khác có thể điều chỉnh
-                window.dispatchEvent(new Event('resize'));
-            });
-
-            // Kích hoạt sự kiện thay đổi ban đầu
-            const event = new Event('change');
-            openCheckbox.dispatchEvent(event);
+        } else {
+            loader.style.display = show ? 'flex' : 'none';
         }
-    });
+    }
 });

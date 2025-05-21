@@ -1,0 +1,780 @@
+/* ===== CSS CHO TRANG QUẢN LÝ LỚP HỌC PHẦN ===== */
+
+/* Định dạng chung cho container */
+.content {
+    padding: 30px;
+    color: black;
+    min-height: 80%;
+    background-color: white;
+    transition: 0.3s ease;
+    overflow-y: auto;
+    width: 100%;
+    border-radius: 15px;
+    margin-top: 80px;
+    /* Thêm transition cho hiệu ứng di chuyển */
+    transition: margin-left 0.3s ease, width 0.3s ease;
+}
+
+/* Khi checkbox sidebar được checked */
+#open:checked~.content,
+body.has-sidebar-open .content {
+    margin-left: 175px;
+    /* Điều chỉnh theo chiều rộng thực tế của menu */
+    width: calc(100% - 250px);
+}
+
+/* Điều chỉnh responsive khi có sidebar */
+@media screen and (max-width: 768px) {
+
+    #open:checked~.content,
+    body.has-sidebar-open .content {
+        margin-left: 0;
+        width: 100%;
+        opacity: 0.7;
+        /* Làm mờ content khi sidebar mở trên mobile */
+    }
+}
+
+#open:checked~.sidebar {
+    transform: translateX(0);
+}
+
+
+/* Responsive */
+@media (max-width: 768px) {
+    #open:checked~.sidebar {
+        transform: translateX(0);
+    }
+
+    #open:checked~.content {
+        margin-left: 0;
+        width: 100%;
+    }
+
+    /* Thêm overlay khi sidebar mở trên mobile */
+    #open:checked~.overlay {
+        display: block;
+        opacity: 1;
+    }
+}
+
+.content h2 {
+    margin-bottom: 20px;
+    font-size: 28px;
+    color: black;
+    padding-left: 10px;
+}
+
+/* ===== HEADER & TÌM KIẾM ===== */
+.header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    width: 100%;
+}
+
+.header-row h2 {
+    margin: 0;
+    flex-grow: 1;
+}
+
+.search-add-container {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+/* Định dạng ô tìm kiếm */
+.search-box {
+    position: relative;
+    width: 300px;
+    flex: 1;
+    min-width: 200px;
+}
+
+.search-box input {
+    width: 100%;
+    padding: 10px 15px;
+    padding-right: 40px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.search-box button {
+    position: absolute;
+    right: 5px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: #666;
+    cursor: pointer;
+}
+
+.search-box button:hover {
+    color: #3399FF;
+}
+
+/* Nút xuất Excel và làm mới */
+.export-btn,
+.refresh-btn {
+    padding: 10px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: background-color 0.3s, transform 0.3s;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.export-btn {
+    background-color: #5cb85c;
+    color: white;
+}
+
+.refresh-btn {
+    background-color: #5bc0de;
+    color: white;
+}
+
+.export-btn:hover,
+.refresh-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.export-btn:hover {
+    background-color: #4cae4c;
+}
+
+.refresh-btn:hover {
+    background-color: #46b8da;
+}
+
+/* Sửa lỗi: Chưa định nghĩa style cho utility-buttons */
+.utility-buttons {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+/* Sửa lỗi: Sai tên class btn-secondary */
+.btn-secondary {
+    padding: 10px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    background-color: #6c757d;
+    color: white;
+    transition: background-color 0.3s, transform 0.3s;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.btn-secondary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    background-color: #5a6268;
+}
+
+/* Sửa lỗi: Sai tên class btn-primary */
+.btn-primary {
+    padding: 10px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    background-color: #3399FF;
+    color: white;
+    transition: background-color 0.3s, transform 0.3s;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    background-color: #2980b9;
+}
+
+/* ===== FILTER SECTION ===== */
+.filter-section {
+    margin-bottom: 20px;
+}
+
+.filter-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    padding: 15px;
+    background-color: #f9f9f9;
+    border-radius: 5px;
+    border: 1px solid #eee;
+}
+
+.filter-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.filter-group label {
+    font-weight: 500;
+    color: #555;
+    min-width: 70px;
+}
+
+.filter-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.filter-options select {
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    min-width: 150px;
+}
+
+/* ===== ĐỊNH DẠNG BẢNG ===== */
+.table-responsive {
+    overflow-x: auto;
+    margin-bottom: 20px;
+}
+
+.class-session-table,
+.schedule-table,
+.student-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+    background-color: #fff;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+    border-radius: 5px;
+    overflow: hidden;
+}
+
+.class-session-table thead,
+.schedule-table thead,
+.student-table thead {
+    background-color: #3399FF;
+    color: white;
+}
+
+.class-session-table th,
+.schedule-table th,
+.student-table th {
+    padding: 12px 15px;
+    text-align: center;
+    font-weight: 500;
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+    background-color: #fff;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+    border-radius: 5px;
+    overflow: hidden;
+}
+
+.data-table thead {
+    background-color: #3399FF;
+    color: white;
+}
+
+.data-table th {
+    padding: 12px 15px;
+    text-align: center;
+    font-weight: 500;
+}
+
+.class-session-table tbody tr,
+.schedule-table tbody tr,
+.student-table tbody tr {
+    border-bottom: 1px solid #eee;
+    transition: background-color 0.2s;
+}
+
+.class-session-table tbody tr:hover,
+.schedule-table tbody tr:hover,
+.student-table tbody tr:hover {
+    background-color: #f5f5f5;
+}
+
+.data-table tbody tr {
+    border-bottom: 1px solid #eee;
+    transition: background-color 0.2s;
+}
+
+.data-table tbody tr:hover {
+    background-color: #f5f5f5;
+}
+
+.class-session-table td,
+.schedule-table td,
+.student-table td {
+    padding: 10px 15px;
+    text-align: center;
+}
+
+.data-table td {
+    padding: 10px 15px;
+    text-align: center;
+}
+
+/* ===== PAGINATION ===== */
+.pagination-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 20px;
+}
+
+.pagination-info {
+    color: #666;
+    font-size: 14px;
+}
+
+.pagination {
+    display: flex;
+    gap: 5px;
+}
+
+.pagination button {
+    width: 36px;
+    height: 36px;
+    border: 1px solid #ddd;
+    background-color: white;
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    transition: all 0.2s;
+}
+
+.pagination button.active {
+    background-color: #3399FF;
+    color: white;
+    border-color: #3399FF;
+}
+
+.pagination button:hover:not(.active):not(:disabled) {
+    background-color: #f0f0f0;
+}
+
+.pagination button:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+/* ===== ACTION BUTTONS ===== */
+.action-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+}
+
+.action-btn {
+    border: none;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: white;
+    transition: all 0.2s;
+}
+
+.view-btn {
+    background-color: #3399FF;
+}
+
+.attendance-btn {
+    background-color: #5cb85c;
+}
+
+.action-btn:hover {
+    transform: scale(1.1);
+    opacity: 0.9;
+}
+
+/* ===== MODAL STYLES ===== */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
+    z-index: 1000;
+    overflow-y: auto;
+}
+
+.modal-content {
+    background-color: white;
+    margin: 50px auto;
+    width: 90%;
+    max-width: 600px;
+    border-radius: 8px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    animation: modalFadeIn 0.3s ease;
+}
+
+.large-modal {
+    max-width: 900px;
+}
+
+@keyframes modalFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.modal-header {
+    background-color: #3399FF;
+    color: white;
+    padding: 15px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-radius: 8px 8px 0 0;
+}
+
+.modal-header h3 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 500;
+}
+
+.modal-header .close-modal {
+    font-size: 22px;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.modal-header .close-modal:hover {
+    color: #eee;
+}
+
+.modal-body {
+    padding: 20px;
+    max-height: 70vh;
+    overflow-y: auto;
+}
+
+.modal-footer {
+    padding: 15px 20px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    border-top: 1px solid #eee;
+}
+
+/* ===== CLASS SESSION DETAILS ===== */
+.class-session-details {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.details-section {
+    border: 1px solid #eee;
+    border-radius: 5px;
+    padding: 15px;
+    background-color: #fcfcfc;
+}
+
+.details-section h4 {
+    margin-top: 0;
+    margin-bottom: 15px;
+    font-size: 16px;
+    color: #333;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 8px;
+}
+
+.details-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+}
+
+.detail-item {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.info-label {
+    font-weight: 600;
+    color: #555;
+    font-size: 14px;
+}
+
+.detail-label {
+    font-weight: 600;
+    color: #555;
+    font-size: 14px;
+}
+
+.info-value {
+    color: #333;
+    font-size: 15px;
+}
+
+.detail-value {
+    color: #333;
+    font-size: 15px;
+}
+
+/* Student list actions */
+.student-list-actions {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 15px;
+    gap: 10px;
+}
+
+.student-list-controls {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 15px;
+    gap: 10px;
+}
+
+.student-list-controls .search-box {
+    flex-grow: 1;
+}
+
+/* ===== BUTTONS ===== */
+.btn {
+    padding: 10px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: all 0.2s;
+}
+
+.btn-primary {
+    background-color: #3399FF;
+    color: white;
+}
+
+.btn-secondary {
+    background-color: #6c757d;
+    color: white;
+}
+
+.btn:hover {
+    opacity: 0.9;
+    transform: translateY(-2px);
+}
+
+/* ===== NOTIFICATION MODAL ===== */
+.notification-modal {
+    display: none;
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1100;
+    animation: notificationSlideIn 0.3s ease;
+}
+
+@keyframes notificationSlideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+.notification-content {
+    background-color: white;
+    padding: 15px 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    min-width: 300px;
+    border-left: 4px solid #4CAF50;
+}
+
+.notification-icon {
+    font-size: 24px;
+    color: #4CAF50;
+}
+
+.notification-text {
+    flex-grow: 1;
+}
+
+.notification-text h3 {
+    margin: 0 0 5px 0;
+    font-size: 16px;
+    color: #333;
+}
+
+.notification-text p {
+    margin: 0;
+    color: #666;
+    font-size: 14px;
+}
+
+/* Notification styles by type */
+.notification-modal.success .notification-content {
+    border-left-color: #4CAF50;
+}
+
+.notification-modal.success .notification-icon {
+    color: #4CAF50;
+}
+
+.notification-modal.error .notification-content {
+    border-left-color: #F44336;
+}
+
+.notification-modal.error .notification-icon .fa-check-circle {
+    display: none;
+}
+
+.notification-modal.error .notification-icon .fa-exclamation-triangle {
+    display: inline;
+    color: #F44336;
+}
+
+.notification-modal.warning .notification-content {
+    border-left-color: #FF9800;
+}
+
+.notification-modal.warning .notification-icon .fa-check-circle {
+    display: none;
+}
+
+.notification-modal.warning .notification-icon .fa-exclamation-triangle {
+    display: inline;
+    color: #FF9800;
+}
+
+/* ===== LOADER ===== */
+.loader-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255, 255, 255, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1200;
+}
+
+.loader {
+    border: 5px solid #f3f3f3;
+    border-top: 5px solid #3399FF;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+/* ===== RESPONSIVE STYLES ===== */
+@media (max-width: 768px) {
+    .header-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
+
+    .utility-buttons {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .search-add-container {
+        width: 100%;
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .search-box {
+        width: 100%;
+        margin-bottom: 10px;
+    }
+
+    .filter-container {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .filter-options {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .filter-options select {
+        width: 100%;
+    }
+
+    .details-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .student-list-controls {
+        flex-direction: column;
+    }
+
+    .modal-content {
+        width: 95%;
+        margin: 20px auto;
+    }
+
+    .modal-body {
+        max-height: 80vh;
+    }
+}

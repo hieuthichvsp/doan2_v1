@@ -4,7 +4,7 @@
         <label for="open" class="open">
             <i class="fas fa-bars"></i>
         </label>
-        
+
         <!-- Di chuyển phần user section ra ngoài menu để nằm ở góc phải trên cùng -->
         <div class="user-section-header">
             <div class="welcome-text">
@@ -16,25 +16,21 @@
                 <span>Đăng xuất</span>
             </a>
         </div>
-        
+
         <div class="menu">
             <div class="logo">
                 <a href="/teacher/dashboard">
                     <img src="/img/vlute_icon.png" alt="Logo trường">
                 </a>
             </div>
-            
+
             <ul>
                 <li><a href="/teacher/dashboard"><span><i class="fas fa-home"></i></span>Trang chủ</a></li>
-                <li><a href="/teacher/classSessionManagement"><span><i class="fas fa-book-open"></i></span>Lớp học phần</a></li>
+                <li><a href="/teacher/classSessionManagement"><span><i class="fas fa-book-open"></i></span>Lớp học
+                        phần</a></li>
                 <li><a href="/teacher/attendance"><span><i class="fas fa-clipboard-check"></i></span>Điểm danh</a></li>
                 <li><a href="/teacher/schedule"><span><i class="fas fa-calendar-alt"></i></span>Lịch dạy</a></li>
                 <li><a href="/teacher/statistics"><span><i class="fas fa-chart-bar"></i></span>Thống kê</a></li>
-                <li class="notification-item">
-                    <a href="/teacher/notifications"><span><i class="fas fa-bell"></i></span>Thông báo
-                        <span class="notification-counter">3</span>
-                    </a>
-                </li>
             </ul>
         </div>
     </nav>
@@ -82,11 +78,11 @@
         .menu ul li a span {
             margin-right: 0;
         }
-        
+
         .menu ul li a span i {
             font-size: 20px;
         }
-        
+
         .menu ul li a {
             flex-direction: column;
             padding: 10px 5px;
@@ -97,11 +93,11 @@
 </style>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
         // Đánh dấu menu item đang active dựa trên URL hiện tại
         const currentUrl = window.location.pathname;
         const menuItems = document.querySelectorAll('.menu ul li a');
-        
+
         menuItems.forEach(item => {
             if (currentUrl.includes(item.getAttribute('href'))) {
                 item.classList.add('active');

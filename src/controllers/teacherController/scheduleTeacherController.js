@@ -21,7 +21,12 @@ const showSchedulePage = async (req, res) => {
  */
 const getSchedulesByRange = async (req, res) => {
     try {
-        const { teacherId, date, startDate, endDate, view } = req.query;
+        const { teacherId, date, startDate, endDate, view, semesterId } = req.query;
+
+        // Ghi log để debug
+        console.log('Request params:', {
+            teacherId, date, startDate, endDate, view, semesterId
+        });
 
         if (!teacherId) {
             return res.status(400).json({
@@ -30,26 +35,37 @@ const getSchedulesByRange = async (req, res) => {
             });
         }
 
+        if (!semesterId) {
+            return res.status(400).json({
+                success: false,
+                message: 'Vui lòng chọn học kỳ'
+            });
+        }
+
         let result;
 
         if (view === 'day' && date) {
-            result = await teacherService.scheduleTeacherService.getSchedulesByDay(teacherId, date);
-        } else if (view === 'week' && startDate && endDate) {
-            result = await teacherService.scheduleTeacherService.getSchedulesByRange(teacherId, startDate, endDate);
-        } else if (view === 'month' && startDate && endDate) {
-            result = await teacherService.scheduleTeacherService.getSchedulesByRange(teacherId, startDate, endDate);
+            result = await teacherService.scheduleTeacherService.getSchedulesByDay(teacherId, date, semesterId);
+        } else if ((view === 'week' || view === 'month') && startDate && endDate) {
+            result = await teacherService.scheduleTeacherService.getSchedulesByRange(teacherId, startDate, endDate, semesterId);
         } else {
             // Mặc định lấy lịch trong ngày hiện tại
             const today = new Date().toISOString().split('T')[0];
-            result = await teacherService.scheduleTeacherService.getSchedulesByDay(teacherId, today);
+            result = await teacherService.scheduleTeacherService.getSchedulesByDay(teacherId, today, semesterId);
         }
+
+        // Ghi log kết quả để debug
+        console.log('API Result:', {
+            success: result.success,
+            schedulesCount: result.schedules ? result.schedules.length : 0
+        });
 
         return res.json(result);
     } catch (error) {
         console.error('Error in getSchedulesByRange controller:', error);
         return res.status(500).json({
             success: false,
-            message: 'Lỗi khi lấy dữ liệu lịch dạy'
+            message: 'Lỗi khi lấy dữ liệu lịch dạy: ' + error.message
         });
     }
 };
@@ -132,10 +148,27 @@ const getTeacherRooms = async (req, res) => {
     }
 };
 
+/**
+ * Lấy danh sách học kỳ
+ */
+const getSemesters = async (req, res) => {
+    try {
+        const result = await teacherService.scheduleTeacherService.getSemesters();
+        return res.json(result);
+    } catch (error) {
+        console.error('Error in getSemesters controller:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'Lỗi khi lấy danh sách học kỳ: ' + error.message
+        });
+    }
+};
+
 module.exports = {
     showSchedulePage,
     getSchedulesByRange,
     getTeacherSubjects,
     getTeacherClassSessions,
-    getTeacherRooms
+    getTeacherRooms,
+    getSemesters
 };

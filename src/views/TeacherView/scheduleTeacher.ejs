@@ -44,6 +44,27 @@
                     <h2>Lịch dạy của giáo viên</h2>
                 </div>
 
+                <!-- Thay thế phần chọn học kỳ -->
+                <div class="card semester-selection-card">
+                    <div class="card-header">
+                        <h6 class="m-0 font-weight-bold text-white">Chọn học kỳ</h6>
+                    </div>
+                    <div class="card-body">
+                        <div id="semester-warning" class="alert alert-warning" style="display: none;">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <span>Vui lòng chọn học kỳ trước khi xem lịch dạy</span>
+                        </div>
+
+                        <div class="semester-selector-container">
+                            <label for="semester-selector">Học kỳ:</label>
+                            <select id="semester-selector" class="form-control">
+                                <option value="">-- Chọn học kỳ --</option>
+                                <!-- Options will be filled by JavaScript -->
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Điều khiển lịch dạy -->
                 <div class="card">
                     <div class="card-header">
@@ -74,35 +95,30 @@
 
                         <!-- View Ngày -->
                         <div id="day-view" class="schedule-view active">
-                            <div class="card">
-                                <div class="card-header">
-                                    <h6 class="m-0 font-weight-bold text-white" id="selected-day">Đang tải...</h6>
-                                </div>
-                                <div class="card-body p-0">
-                                    <div class="table-responsive">
-                                        <table class="table table-bordered">
-                                            <thead class="thead-light">
-                                                <tr>
-                                                    <th width="50" class="text-center">STT</th>
-                                                    <th width="120">Thời gian</th>
-                                                    <th>Lớp học phần</th>
-                                                    <th>Môn học</th>
-                                                    <th width="100">Phòng</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody id="day-schedule-events">
-                                                <tr>
-                                                    <td colspan="5" class="text-center">Đang tải dữ liệu...</td>
-                                                </tr>
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
+                            <!-- Thêm thông báo không có lịch học vào day-view -->
+                            <div id="day-view-empty" class="no-schedule-message" style="display: none;">
+                                <i class="fas fa-calendar-times"></i>
+                                <h4>Không có lịch dạy trong ngày này</h4>
+                                <p>Bạn không có lịch dạy nào trong ngày đã chọn. Hãy chọn ngày khác hoặc kiểm tra lại
+                                    thông tin học kỳ.</p>
+                            </div>
+                            <!-- Bảng lịch hiện tại -->
+                            <div class="table-responsive" id="day-schedule-table">
+                                <table class="table">
+                                    <!-- Nội dung bảng -->
+                                </table>
                             </div>
                         </div>
 
                         <!-- View Tuần -->
                         <div id="week-view" class="schedule-view">
+                            <!-- Thêm thông báo không có lịch học vào week-view -->
+                            <div id="week-view-empty" class="no-schedule-message" style="display: none;">
+                                <i class="fas fa-calendar-times"></i>
+                                <h4>Không có lịch dạy trong tuần này</h4>
+                                <p>Bạn không có lịch dạy nào trong tuần đã chọn. Hãy chọn tuần khác hoặc kiểm tra lại
+                                    thông tin học kỳ.</p>
+                            </div>
                             <div class="card">
                                 <div class="card-header">
                                     <h6 class="m-0 font-weight-bold text-white" id="week-range">Đang tải...</h6>
@@ -162,6 +178,13 @@
 
                         <!-- View Tháng -->
                         <div id="month-view" class="schedule-view">
+                            <!-- Thêm thông báo không có lịch học vào month-view -->
+                            <div id="month-view-empty" class="no-schedule-message" style="display: none;">
+                                <i class="fas fa-calendar-times"></i>
+                                <h4>Không có lịch dạy trong tháng này</h4>
+                                <p>Bạn không có lịch dạy nào trong tháng đã chọn. Hãy chọn tháng khác hoặc kiểm tra lại
+                                    thông tin học kỳ.</p>
+                            </div>
                             <div class="card">
                                 <div class="card-header">
                                     <h6 class="m-0 font-weight-bold text-white" id="month-title">Đang tải...</h6>
@@ -206,6 +229,15 @@
                                         </table>
                                     </div>
                                 </div>
+                            </div>
+                        </div>
+
+                        <!-- Thêm div thông báo không có học kỳ -->
+                        <div id="no-semester-selected" class="schedule-info-message" style="display: none;">
+                            <div class="schedule-empty-message">
+                                <i class="fas fa-calendar-times"></i>
+                                <h4>Chưa chọn học kỳ</h4>
+                                <p>Vui lòng chọn một học kỳ từ danh sách phía trên để xem lịch dạy.</p>
                             </div>
                         </div>
                     </div>

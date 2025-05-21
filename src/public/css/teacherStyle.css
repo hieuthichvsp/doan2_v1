@@ -34,31 +34,36 @@ body {
     width: 90%;
     margin: 0 auto;
 }
-.stats-overview{
+
+.stats-overview {
     width: 100%;
 }
-.header-row{
+
+.header-row {
     width: 100%;
 }
-.tabs-container{
+
+.tabs-container {
     width: 100%;
 }
+
 /* CSS cho việc di chuyển nội dung khi mở sidebar */
-#open:checked ~ .content,
+#open:checked~.content,
 body.has-sidebar-open .content {
     margin-left: var(--sidebar-width);
     transition: all 0.3s ease;
 }
 
 /* Di chuyển header cùng với nội dung */
-#open:checked ~ header,
+#open:checked~header,
 body.has-sidebar-open header {
     margin-left: var(--sidebar-width);
     transition: all 0.3s ease;
 }
 
 /* Đảm bảo chuyển động mượt mà */
-.content, header {
+.content,
+header {
     transition: margin-left 0.3s ease;
 }
 
@@ -72,7 +77,7 @@ body.has-sidebar-open header {
     padding: 20px;
 }
 
-.dashboard-container > section {
+.dashboard-container>section {
     background: #fff;
     border-radius: var(--border-radius);
     box-shadow: var(--box-shadow);
@@ -144,7 +149,8 @@ body.has-sidebar-open header {
     border-collapse: collapse;
 }
 
-.schedule-table th, .schedule-table td {
+.schedule-table th,
+.schedule-table td {
     padding: 10px;
     text-align: left;
     border-bottom: 1px solid #eee;
@@ -267,7 +273,8 @@ body.has-sidebar-open header {
     display: block;
 }
 
-.class-schedule, .class-students {
+.class-schedule,
+.class-students {
     color: #666;
     margin: 5px 0;
     font-size: 14px;
@@ -275,7 +282,8 @@ body.has-sidebar-open header {
     align-items: center;
 }
 
-.class-schedule i, .class-students i {
+.class-schedule i,
+.class-students i {
     margin-right: 8px;
     width: 16px;
     color: #3399FF;
@@ -400,7 +408,7 @@ body.has-sidebar-open header {
 }
 
 .schedule-details {
-    margin-left:15px;
+    margin-left: 15px;
 }
 
 .schedule-details h4 {
@@ -608,8 +616,15 @@ body.has-sidebar-open header {
 }
 
 @keyframes modalFadeIn {
-    from {opacity: 0; transform: translateY(-30px);}
-    to {opacity: 1; transform: translateY(0);}
+    from {
+        opacity: 0;
+        transform: translateY(-30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 /* Status và messages */
@@ -646,7 +661,7 @@ body.has-sidebar-open header {
 }
 
 /* Khi checkbox được check, hiển thị menu */
-#open:checked ~ .menu {
+#open:checked~.menu {
     transform: translateX(0);
 }
 
@@ -672,12 +687,12 @@ header {
 }
 
 /* Khi sidebar mở, đẩy nội dung và header sang phải */
-#open:checked ~ .content,
+#open:checked~.content,
 body.has-sidebar-open .content {
     margin-left: var(--sidebar-width);
 }
 
-#open:checked ~ header,
+#open:checked~header,
 body.has-sidebar-open header {
     margin-left: var(--sidebar-width);
     width: calc(100% - var(--sidebar-width));
@@ -688,7 +703,7 @@ body.has-sidebar-open header {
     transition: transform 0.3s ease;
 }
 
-#open:checked ~ .open i {
+#open:checked~.open i {
     transform: rotate(90deg);
 }
 
@@ -712,7 +727,7 @@ body.has-sidebar-open header {
     .dashboard-container {
         grid-template-columns: 1fr;
     }
-    
+
     .today-schedule,
     .notifications,
     .teaching-classes,
@@ -720,31 +735,31 @@ body.has-sidebar-open header {
     .upcoming-schedules {
         grid-column: 1;
     }
-    
+
     .notifications {
         grid-row: 2;
     }
-    
+
     .teaching-classes {
         grid-row: 3;
     }
-    
+
     .attendance-issues {
         grid-row: 4;
     }
-    
+
     .upcoming-schedules {
         grid-row: 5;
     }
-    
+
     .stats-overview {
         grid-template-columns: repeat(2, 1fr);
     }
-    
+
     .cardBox {
         grid-template-columns: 1fr;
     }
-    
+
     .classes-list {
         grid-template-columns: 1fr;
     }
@@ -754,16 +769,16 @@ body.has-sidebar-open header {
     .stats-overview {
         grid-template-columns: 1fr;
     }
-    
+
     .today-schedule {
         grid-column: span 1;
     }
-    
+
     .schedule-table th:nth-child(3),
     .schedule-table td:nth-child(3) {
         display: none;
     }
-    
+
     .modal-content {
         width: 95%;
     }
